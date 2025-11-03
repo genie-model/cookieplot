@@ -1,14 +1,14 @@
-function [OUTPUT] = plot_fields_biogem_3d_k(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PMASK,PCSCALE,PCMIN,PCMAX,PCN,PDATA,POPT,PNAME)
-% plot_fields_biogem_3d_k
+function [OUTPUT] = plot_biogem_3d_k(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PMASK,PCSCALE,PCMIN,PCMAX,PCN,PDATA,POPT,PNAME)
+% plot_biogem_fields_3d_k
 %
 %   *******************************************************************   %
 %   *** biogem k-SECTION (LON-LAT) DIFFERENCE PLOTTING ****************   %
 %   *******************************************************************   %
 %
-%   plot_fields_biogem_3d_k(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PMASK,PCSCALE,PCMIN,PCMAX,PCN,PDATA,POPT,PNAME)
+%   plot_biogem_3d_k(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PMASK,PCSCALE,PCMIN,PCMAX,PCN,PDATA,POPT,PNAME)
 %   plots a k-section through the BIOGEM 3-D netCDF data file (with
 %   differencing/anomoly and water column integral options)
-%   'fields_biogem_3d.nc' and takes 15 arguments:
+%   'biogem_fields_3d.nc' and takes 15 arguments:
 %
 %   PEXP1 [STRING] (e.g. 'preindustrial_spinup')
 %   --> the (first) experiment name
@@ -63,7 +63,7 @@ function [OUTPUT] = plot_fields_biogem_3d_k(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,
 %       then a filename is automatically generated
 %
 %   Example
-%           plot_fields_biogem_3d_k('experiment_1','','ocn_PO4','',1994.5,-1,16,'',1e-6,0,2,20,'','','')
+%           plot_biogem_3d_k('experiment_1','','ocn_PO4','',1994.5,-1,16,'',1e-6,0,2,20,'','','')
 %           will plot the time-slice cenetered on a time of 1994.5,
 %           of PO4 concentrations at the ocean surface (k = 16),
 %           between 0 and 2 umol kg-1 in 20 contour intervals
@@ -75,299 +75,10 @@ function [OUTPUT] = plot_fields_biogem_3d_k(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,
 % ***** HISTORY ********************************************************* %
 % *********************************************************************** %
 %
-%   10/06/19: CREATED ...
-%   10/07/01: Passed reference data stats to plot_taylordiag
-%   10/07/05: cosmetic changes ...
-%   10/07/05: name changed: allstats -> calc_allstats
-%   10/07/06: adjustments to use calc_find_ij_v100706 (in place of find_ij)
-%   10/07/06: sorted out confusion between (lon,lat) of the data and (j,i) of the model grid ...
-%   10/07/06: added stats save
-%   10/07/08: filtered overlay data to avoid plotting on land!
-%   10/07/16: added option for inputting (i,j) data
-%   11/01/30: re-formatting
-%             addition of 3D data Taylor Diagram analysis
-%   11/01/31: 3D data Taylor Diagram analysis debugging ...
-%   11/05/31: Added time-stamping to Taylor plots
-%   11/05/31: cosmetic changes
-%   12/01/21: changed subroutine name: calc_find_ij_v100706 -> calc_find_ij
-%   12/01/23: fixed bug in plot save string
-%             added quiver plot option (for velocity field)
-%             added cell averaging + depth layer filtering of overlay data
-%   12/01/24: reorganized sequence of lon axis vs overlay data processing
-%             added parameter to control vector length
-%             rationalized 'user settings'
-%   12/02/09: added in options for: anomoly plotting; data-only
-%   12/05/23: changed order of streamfunction netCDF loading and grid setup
-%             to prevent parameter value conflicts (with data netCDF
-%             parameters)
-%   12/10/09: added option for plotting data sites (no values)
-%   12/10/16: updated HELP text
-%   12/10/18: reordered parameter list
-%   12/11/13: removed scale bar when data Site labelling selected
-%   12/12/10: added highlight contour option
-%   12/12/10: removed stats calc when data is plotted as 'site'
-%             fully removed land data sites (rather than set as NaN value)
-%             updated color bar drawing
-%             added additional option for labelling sites
-%             revision of data loading and processoing to avoid impicit
-%               integer truncation, requiring DOUBLE<->INT32 conversions
-%   12/12/14: adjusted plotting of single contour overlay
-%             revised filename string
-%   12/12/27: bug-fix in non re-gridded obs data (wrong levtor length)
-%   13/01/02: fixed small buglette in gridded data plotting
-%   13/01/14: changed a default [data anomoly]
-%             fixed bug in alt date (time-slice) read-in
-%   13/05/24: enabled mask-out regions ot be plotted in white
-%   13/08/12: small tweak to site plotting (as per SEDGEM plotting)
-%             changed data format
-%             updated stats calculation and output
-%   13/09/19: adjusted filename
-%   13/10/06: created alt anomoly colormap and adjusted anomoly plotting
-%             added invert color bar option
-%             tidy-up of old code
-%   13/11/08: added option for omitting stats saving
-%             filled in data only points white (rather than empty)
-%   13/11/10: added alternative figure format saving
-%   13/11/11: [minor]
-%   13/11/12: REORGANIZED USER SETTINGS [AND PASSED PARAMETER LIST]
-%   13/11/15: minor
-%   13/11/18: MUTLAB bug-fix(?) for nmax<10 not displaying scatter colors
-%   13/11/22: bug-fix of data scatter plotting (now: value, not depth!!!)
-%             minor alterations to facilitate data export
-%   13/12/04: added data-only saving
-%   13/12/19: disabled target diagram for now to simplify things
-%   13/12/23: added file format selection for 'new' plotting
-%   14/04/15: added alt filename
-%   14/04/17: altered (fixed?) criteria for not ploting the color scale
-%   14/04/19: removed old colorbar option
-%   14/08/11: added addiitonal options for fine-tuning site markers
-%   14/08/20: added '%'s to ASCII data output headers
-%   14/09/11: added options for:
-%             setting the min/max k-values for water column averages
-%             whether to plot as averages or column inventory
-%             whether to plot the min or max value anywhere in the column
-%             (for the latter -- k value is identified but not used yet)
-%   14/09/11: added option for uniform lat grid
-%   14/09/12: completed uniform grid option
-%             added option for setting shape and color of data points
-%   14/09/15: fixed up setting shape and color of data points code
-%             also: added the capabilty of finding min of max values across
-%                   two different fields (rather than calc a difference)
-%   14/09/17: renamed plot_lon_min -> plot_lon_origin
-%             added options for plotting sub-regions
-%   14/09/29: auto plot format
-%   14/09/30: minor bug-fix of data location reported lat values
-%   14/10/28: added auto identification of kmax (for input kplot > kmax)
-%   14/12/01: incorporated cbrewer.m colormap schemes (& removed anom map)
-%   14/12/03: removed cbrewer.m ... :o)
-%   14/12/03: incorporated new make_cmap5 function
-%   14/12/07: fixed dim error in flipping color scale
-%   14/12/13: fixed highlight contour; adjusted line-widths (and color)
-%   14/12/30: added cross-plotting
-%             fixed missing nmax value for dual 3D data input
-%   15/01/06: added some parameter (k-value) warnings
-%             added benthic plotting and data extraction
-%   15/01/07: bug-fixed grid shifting of depth arrays
-%             adjusted kmin/kmax filtering, added it to benthic analysis
-%             adjusted parameter names for restricting k space data
-%             (now: data_kmin, data_kmax)
-%   15/01/09: revised to use new make_cmap5.m (adjusted number of colors)
-%   15/01/11: various bug-fixes on k space parameter changes
-%   15/01/11: replaced make_cmap5 -> make_cmap
-%   15/01/12: adjusted orientation of data_vector_2
-%   15/01/13: bug-fix of recent changes
-%   15/02/25: corrected netCDF dim inq (netcdf.inqDimID) command
-%             (was netcdf.inqvarID! and everything worked by luck ...)
-%   15/02/26: added additional NaN data filtering
-%             added flexibility to load netCDF files from home directory
-%   15/03/03: adjusted setting of restricted k interval
-%   15/04/20: formatting
-%   15/10/14: adjusted contor line widths
-%             adjusted data text label positioning
-%   15/11/23: removed data filtering for k=0 case
-%             (why was it there in the first place ... ?)
-%   16/02/12: fixed bug in data plotting on benthic surface [ca. line 1054]
-%   16/02/29: added anomoly saving as netCDF
-%   16/03/01: updated 'help' text
-%             fix to rawdata processing
-%             adjusted conditional for saving netCDF anomoly
-%   16/03/01: added documentation marker ('%%') (who knew!)
-%             added stats function return
-%   16/03/02: revised stats output
-%   16/05/17: corrected kplot error message
-%   17/01/20: added option for seperating scaling of model and data data
-%             [data_scalepoints]
-%   17/04/27: added saving of mask points
-%             NOTE: added laym values in 'calculate topography' ... 
-%                   hopefully not screwing anything up ...
-%   17/05/02: added parameter backwards-compatability [data_scalepoints]
-%   17/08/03: fixed up velocity vector plotting!
-%   17/08/04: add surface current speed background when 
-%             <data_only> == 'y', <data_uv> == 'y'
-%   17/08/28: changed sign of how data_offset is aplied to <data>
-%             edited model-data output format
-%   17/09/26: added automatic seafloor find for kplot == -1 and (ijk) data
-%             *** GIT UPLOAD **********************************************
-%   17/10/26: rationalized directories and paths (inc. path input params.)
-%             *** VERSION 1.00 ********************************************
-%   17/10/31: adjusted main plot window size
-%             *** VERSION 1.01 ********************************************
-%   17/11/01: adjusted paths ... again ...
-%             *** VERSION 1.02 ********************************************
-%   17/11/02: adjusted paths ... again again ...
-%             *** VERSION 1.03 ********************************************
-%   17/12/29: fixed some minor bugs with overlay (lon,lat) data processing
-%             *** VERSION 1.04 ********************************************
-%   17/12/30: adjusted paths ... bug fix ...
-%             *** VERSION 1.05 ********************************************
-%   18/02/19: removed prescribed directory in loading mask file
-%             *** VERSION 1.06 ********************************************
-%   18/02/19: removed NOT data_only requirement for plotting cross-plot
-%             corrected data point k assignment for kplot == -1 case
-%             *** VERSION 1.07 ********************************************
-%   18/03/20: some fixes
-%            (a lesson to be learned here about noting them down ...)
-%             *** VERSION 1.08 ********************************************
-%   18/04/05: added M-score stats output
-%             *** VERSION 1.09 ********************************************
-%   18/07/16: corrected sign of depth in mask location ASCII output
-%   18/07/20: changed initial name of 'raw' netCDF data 
-%             to help avoid potenital issues
-%             added parameters and code to extract min and max from
-%             seasonal data
-%             added code to save all points, and also in an explicit format
-%             *** VERSION 1.10 ********************************************
-%   18/08/02: added velocity scale vector (0.1 m s-1)
-%             (also removed more xm and ym NaN assignments)
-%             *** VERSION 1.11 ********************************************
-%   18/08/21: rename current_path string
-%             adjusted mask path search
-%             *** VERSION 1.12 ********************************************
-%   18/10/04: bug-fix of overlay label filtering
-%             added option to force all data to be seafloor (depth) data
-%             *** VERSION 1.13 ********************************************
-%   18/10/09: bug-fix of text label plotting when averaging is selected
-%             *** VERSION 1.14 ********************************************
-%   18/10/25: added automatic identification of number of data columns
-%             (and of selection of explicit shapes and colors)
-%             plus checking of rows in data file (+ simple lon-lat check)
-%   18/10/25: shape parameter bug-fix
-%   18/10/25: bug-fix of seafloor (depth) forcing
-%             *** VERSION 1.15 ********************************************
-%   18/11/07: added ps rendering fix ... hopefuly ...
-%             for MUTLAB version shenanigans
-%             *** VERSION 1.16 ********************************************
-%   18/11/16: further developed model-data (ASCII data) output
-%             *** VERSION 1.17 ********************************************
-%   19/01/07: added data save option
-%             *** VERSION 1.18 ********************************************
-%   19/01/10: added csv format overlay data detection
-%             added site label character filter
-%             added alternative mask of (i,j) vector (single) location
-%             *** VERSION 1.19 ********************************************
-%   19/02/27: removed zero contour line, fixed up the 2 alternatives
-%             *** VERSION 1.20 ********************************************
-%   19/03/18: bug fix for non equal area grids
-%             *** VERSION 1.21 ********************************************
-%   19/03/25: made stats plot optional (selected as secondary plot)
-%             added alternative structure return from function
-%             *** VERSION 1.22 ********************************************
-%   19/03/27: bug fix of STATM -> OUTPUT
-%             *** VERSION 1.23 ********************************************
-%   19/03/31: removed generation of empty STATM array
-%             *** VERSION 1.24 ********************************************
-%   19/05/20: adjusted data filtering
-%             *** VERSION 1.26 ********************************************
-%   19/05/20: added stats saving under data_save option
-%             *** VERSION 1.27 ********************************************
-%   19/07/04: added histogram secondary figure plotting
-%             *** VERSION 1.30 ********************************************
-%   19/07/08: extended cross-plotting and histogram functionality
-%             *** VERSION 1.31 ********************************************
-%   19/07/08: additional data output
-%             *** VERSION 1.32 ********************************************
-%   19/07/14: adjusted plotting limit cut-off
-%             + a little clean-up
-%             *** VERSION 1.34 ********************************************
-%   19/07/16: added selected model data saving with
-%             data_save = 'y' (only) set
-%             *** VERSION 1.35 ********************************************
-%   19/08/28: in reading data files, accounted for headers (specified by %)
-%             in counting total number of (data) lines
-%             *** VERSION 1.36 ********************************************
-%   19/10/03: bug-fix of recent changes ...
-%             *** VERSION 1.37 ********************************************
-%   19/10/03: revised data format checking
-%             *** VERSION 1.38 ********************************************
-%   19/10/15: removed k min,max data parameters from input file
-%             as in practice, they were always re-calculated & over-written
-%             *** VERSION 1.39 ********************************************
-%   20/01/03: added backwards compatability for pre-
-%             contour_hlt2 and contour_hltval2 parameters
-%             *** VERSION 1.40 ********************************************
-%   20/01/07: minor adjustment to data point plotting
-%             *** VERSION 1.41 ********************************************
-%   20/01/10: added flexibility to have mixed (i,j)+depth location data
-%             disabled old/redundant(???) data saving
-%             *** VERSION 1.42 ********************************************
-%   20/03/10: added new data input column format (no label) 
-%             *** VERSION 1.43 ********************************************
-%   20/06/11: adjusted when netCDF anomoly fields are saved 
-%             *** VERSION 1.44 ********************************************
-%   20/08/18: (various)
-%             *** VERSION 1.45 ********************************************
-%   20/08/26: (various) + align version numbers!
-%             *** VERSION 1.46 ********************************************
-%   20/09/04: aligned backwards compatability across functions
-%             *** VERSION 1.48 ********************************************
-%   20/09/25: adjusted data saving
-%             *** VERSION 1.49 ********************************************
-%   20/11/24: ensured stats are always saved, if calculated
-%             but only if the 'old' data output format is selected
-%             (parameter: data_output_old)
-%             Otherwise, the stats are returned by the function and
-%             can be captured and saved from there.
-%             *** VERSION 1.50 ********************************************
-%   20/12/29: replaced data file load and primary processing code
-%             *** VERSION 1.51 ********************************************
-%   20/12/30: added checks on discrete data (for stats, cross-plotting)
-%             revised/corrected equivalent model points/values
-%             *** VERSION 1.53 ********************************************
-%   21/02/25: switched model1 vs. model2 order in cross-plot
-%   21/04/02: added basic stats to the function return
-%             *** VERSION 1.54 ********************************************
-%   21/04/20: adjusted function return stats
-%             *** VERSION 1.55 ********************************************
-%   21/04/27: revised data read-in allowable formats
-%             *** VERSION 1.56 ********************************************
-%   21/08/27: added detection of archive files (+ unpacking then cleaning)
-%             *** VERSION 1.58 ********************************************
-%   21/08/31: added sum to returned structure, renoved NaNs from vector
-%             *** VERSION 1.59 ********************************************
-%   22/01/19: added loc_flag_unpack = false for data (not GENIE) netCDF 
-%             *** VERSION 1.60 ********************************************
-%   22/06/23: revisd min/max surfce output, added associated stats
-%             *** VERSION 1.61 ********************************************
-%   22/08/22: made disabling of stats version-independent [removed range]
-%             *** VERSION 1.62 ********************************************
-%   23/01/17: mostly some adjustments to returned data
-%             *** VERSION 1.63 ********************************************
-%   23/05/01: various minor + check for curve fitting toolbox
-%             and reduce stats output if necessary
-%             *** VERSION 1.64 ********************************************
-%   23/05/01: added basic filtering of labels to parallel that for data
-%             (labels (if not also data) ideally need to be a structure
-%             to make for mroe compact code)
-%             (these changes need to be extended to the other functions)
-%             *** VERSION 1.65 ********************************************
-%   24/06/11: updated graphics export to pdf option for:
-%             plot_format_old = 'n'
-%             *** VERSION 1.66 ********************************************
-%   25/10/24: corrected NaN criteria for differenced fields
-%             *** VERSION 1.67 ********************************************
-%   25/10/31: upgraded gridding function
-%             added nearest neighbor (ocean cell) option
-%             *** VERSION 1.68 ********************************************
+%   25/10/31    FORKED FROM MUFFINPLOT
+%   25/10/31    changed aassumed biogem directory -> results
+%               updated netCDF filename
+%               *** VERSION 2.00 ******************************************
 %
 % *********************************************************************** %
 %%
@@ -379,7 +90,7 @@ function [OUTPUT] = plot_fields_biogem_3d_k(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,
 % *** initialize ******************************************************** %
 % 
 % set version!
-par_ver = 1.678;
+par_ver = 2.00;
 % set function name
 str_function = mfilename;
 % close open windows
@@ -605,7 +316,7 @@ else
     else
         loc_flag_unpack = false;
     end
-    ncid_1=netcdf.open([par_pathin '/' exp_1 '/biogem/fields_biogem_3d.nc'],'nowrite');
+    ncid_1=netcdf.open([par_pathin '/' exp_1 '/results/biogem_fields_3d.nc'],'nowrite');
 end
 % read netCDf information
 [ndims,nvars,ngatts,unlimdimid] = netcdf.inq(ncid_1);
@@ -840,7 +551,7 @@ if ~isempty(exp_2)
     if strcmp(exp_2(end-2:end),'.nc')
         ncid_2=netcdf.open(exp_2,'nowrite');
     else
-        ncid_2=netcdf.open([par_pathin '/' exp_2 '/biogem/fields_biogem_3d.nc'],'nowrite');
+        ncid_2=netcdf.open([par_pathin '/' exp_2 '/results/biogem_fields_3d.nc'],'nowrite');
     end
     % read netCDf information
     [~,nvars,~,~] = netcdf.inq(ncid_2); % [ndims,nvars,ngatts,unlimdimid]
@@ -1085,7 +796,7 @@ else
 end
 data = data + data_offset;
 % filter gridded data
-% NOTE: adopt equivalent criteria for 'NaN' as per plot_fields_biogem_3d_i
+% NOTE: adopt equivalent criteria for 'NaN' as per plot_biogem_fields_3d_i
 %       (not NaN :: (data(k,j,i) > -0.999E19) && (data(k,j,i) < 0.999E19))
 % NOTE: plot_fields_biogem_2d filters the 2 datasets before differencing
 n = 0;
@@ -2614,12 +2325,12 @@ if ((data_save == 'y') && isempty(overlaydataid) && ~isempty(exp_2) && (plot_sec
     % NOTE: GENIE netCDF plotting compatable format
     netcdf.putAtt(ncid,NC_GLOBAL,'title','Gridded data');
     netcdf.putAtt(ncid,NC_GLOBAL,'long_title','Regridded on a regular lon-lat, irregular in depth, grid');
-    netcdf.putAtt(ncid,NC_GLOBAL,'comments','anomolg saving by plot_fields_biogem_3d_k.m');
+    netcdf.putAtt(ncid,NC_GLOBAL,'comments','anomolg saving by plot_biogem_fields_3d_k.m');
     netcdf.putAtt(ncid,NC_GLOBAL,'history','version as of 16/02/29');
     netcdf.putAtt(ncid,NC_GLOBAL,'Conventions','CF-1.6 / GENIE modified');
     netcdf.putAtt(ncid,NC_GLOBAL,'CreationDate',datestr(now,'yyyy/mm/dd HH:MM:SS'));
     netcdf.putAtt(ncid,NC_GLOBAL,'CreatedBy',[getenv('username'), '@', getenv('computername')]);
-    netcdf.putAtt(ncid,NC_GLOBAL,'MatlabSource','plot_fields_biogem_3d_k.m');
+    netcdf.putAtt(ncid,NC_GLOBAL,'MatlabSource','plot_biogem_fields_3d_k.m');
     % define dimensions
     dimid_time = netcdf.defDim(ncid,'time',1);
     dimid_zt = netcdf.defDim(ncid,'zt',kmax);

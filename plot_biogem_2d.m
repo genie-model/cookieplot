@@ -1,12 +1,12 @@
-function [OUTPUT] = plot_fields_biogem_2d(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PMASK,PCSCALE,PCMIN,PCMAX,PCN,PDATA,POPT,PNAME)
-% plot_fields_biogem_2d
+function [OUTPUT] = plot_biogem_2d(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PMASK,PCSCALE,PCMIN,PCMAX,PCN,PDATA,POPT,PNAME)
+% plot_biogem_fields_2d
 %
 %   *******************************************************************   %
 %   *** biogem 2-D (LON-LAT) DATA PLOTTING ****************************   %
 %   *******************************************************************   %
 %
-%   plot_fields_biogem_2d(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PMASK,PCSCALE,PCMIN,PCMAX,PCN,PDATA,POPT,PNAME)
-%   plots the BIOGEM 2-D netCDF data file 'fields_biogem_2d.nc' and takes 15 arguments:
+%   plot_biogem_fields_2d(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PMASK,PCSCALE,PCMIN,PCMAX,PCN,PDATA,POPT,PNAME)
+%   plots the BIOGEM 2-D netCDF data file 'biogem_fields_2d.nc' and takes 15 arguments:
 %
 %   PEXP1 [STRING] (e.g. 'preindustrial_spinup')
 %   --> the (first) experiment name
@@ -61,7 +61,7 @@ function [OUTPUT] = plot_fields_biogem_2d(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PM
 %       then a filename is automatically generated
 %
 %   Example
-%           plot_fields_biogem_2d('experiment_1','','ocn_sur_PO4','',1994.5,-1,14,'',1e-6,0.0,2.0,20,'','','')
+%           plot_biogem_fields_2d('experiment_1','','ocn_sur_PO4','',1994.5,-1,14,'',1e-6,0.0,2.0,20,'','','')
 %           will plot the time-slice cenetered on a time of 1994.5,
 %           of bottom-water [PO4] in units of umol kg-1,
 %           between 0 and 2 umol kg-1 with 20 contour intervals
@@ -74,221 +74,10 @@ function [OUTPUT] = plot_fields_biogem_2d(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PM
 % ***** HISTORY ********************************************************* %
 % *********************************************************************** %
 %
-%   10/07/05: added taylor diagram plotting
-%   10/07/06: adjustments to use calc_find_ij_v100706 (in place of find_ij)
-%             sorted out confusion between (lon,lat) of the data and (j,i) of the model grid ...
-%             added stats save
-%   10/07/16: added option for inputting (i,j) data
-%   11/05/15: bug-fixed experiment differencing
-%             added date stamp
-%   11/05/31: cosmetic changes
-%   11/07/31: added additional contour option
-%             changed (default) colorbar plotting
-%             changed log10 plotting behavior
-%             changed differencing calculation for log10(data)
-%   12/01/21: altered 'help' text
-%             changed subroutine name: calc_find_ij_v100706 -> calc_find_ij
-%             added algorithm to average data per cell (if requested)
-%   12/01/23: minor bug-fix to internal gridding
-%   12/01/24: reorganized sequence of lon axis vs overlay data processing
-%             rationalized 'user settings'
-%   12/02/09: added in options for: anomoly plotting; data-only
-%   12/08/05: added path-free direct netCDF file location/opening option
-%             (by leaving the experiment name field blank)
-%   12/09/06: added saving (ASCII) of re-gridded data
-%   12/10/16: updated HELP text
-%   12/10/18: reordered parameter list
-%   12/11/13: added data Site labelling
-%   12/11/13: removed scale bar when data Site labelling selected
-%   12/11/14: added windstress overlay
-%   12/12/10: added additional option for labelling sites
-%   12/12/14: revised filename string
-%   12/12/27: bug-fix in non re-gridded obs data (wrong vector length)
-%   13/06/24: added netCDF file #2 close
-%   13/07/18: adjusted confusing help on PIK
-%             added optional 2D ASCII data replacement
-%   13/08/09: rationalized filename
-%   13/08/12: updated stats calculation and output
-%             changed data format
-%   13/10/06: created alt anomoly colormap and adjusted anomoly plotting
-%             added invert color bar option
-%   13/10/17: corrected missing parameter + missing variable assignment ...
-%             changed site labelling
-%             added more stats output
-%   13/11/12: REORGANIZED USER SETTINGS [AND PASSED PARAMETER LIST]
-%   13/12/15: bug-fixes and potted changes to start to bring consistent
-%             with the other function revisions
-%   13/12/18: MUTLAB bug-fix(?) for nmax<10 not displaying scatter colors
-%   13/12/19: disabled target diagram for now to simplify things
-%   13/12/23: added file format selection for 'new' plotting
-%   14/04/07: added zonal mean calculation + plotting
-%             added option for not plotting the main figure
-%             added zonal mean data return in function call
-%   14/04/14: rather trivial data point line width adjustment ...
-%   14/04/15: added alt filename
-%   14/04/17: fixed data point n adjustment
-%             altered (fixed?) criteria for not ploting the color scale
-%   14/04/19: removed old colorbar option
-%   14/06/18: corrected help example
-%   14/08/20: added '%'s to ASCII data output headers
-%   14/09/11: added option for uniform lat grid
-%   14/09/17: renamed plot_lon_min -> plot_lon_origin
-%             added options for plotting sub-regions
-%   14/09/29: added selection between the 2 lat grid styles for zonal plot
-%   14/09/30: minor bug-fix of data location reported lat values
-%   14/11/09: auto plot format
-%   14/12/03: incorporated new make_cmap5 function
-%   14/12/07: fixed dim error in flipping color scale
-%   14/12/30: added cross-plotting
-%             fixed missing nmax value for dual 3D data input
-%   15/01/07: bug-fixed grid shifting of depth arrays
-%   15/01/09: revised to use new make_cmap5.m (adjusted number of colors)
-%   15/01/11: replaced make_cmap5 -> make_cmap
-%   15/01/12: adjusted orientation of data_vector_2
-%             added capability for fine-tuning data shapes and colors,
-%             (whilst noting that there is no capability yet to read in the
-%             required additional data columns)
-%   15/01/13: bug-fix of recent changes
-%            added data point shape/color import
-%   15/02/25: corrected netCDF dim inq (netcdf.inqDimID) command
-%             (was netcdf.inqvarID! and everything worked by luck ...)
-%   15/02/26: added additional NaN data filtering
-%             added flexibility to load netCDF files from home directory
-%   15/10/14: adjusted contor line widths
-%             adjusted data text label positioning
-%             added option for 2nd highlight contour
-%   16/03/01: added documentation marker ('%%') (who knew!)
-%   16/03/02: revised stats output
-%   16/11/15: fixed (missing n loop) bug in data overlay plotting
-%   17/01/13: minor edits to allow for 2 (2D) fields plus data locations
-%   17/03/28: added overlay for barotropic streamfunction 
-%   17/03/31: clarified the lack of wind speed (instead: stress) overlay
-%   17/04/19: add backwards compatability (for psi parameter)
-%   17/08/04: added, not very successfully, PSI only plot ...
-%             *** GIT UPLOAD **********************************************
-%   17/10/26: rationalized directories and paths (inc. path input params.)
-%             *** VERSION 1.00 ********************************************
-%   17/10/31: adjusted main plot window size
-%             *** VERSION 1.01 ********************************************
-%   17/11/01: adjusted paths ... again ...
-%             *** VERSION 1.02 ********************************************
-%   17/11/02: improved PSI plotting
-%   17/11/02: adjusted paths ... again again ...
-%             *** VERSION 1.03 ********************************************
-%   17/12/29: fixed some minor bugs with overlay (lon,lat) data processing
-%             *** VERSION 1.04 ********************************************
-%   18/02/19: removed NOT data_only requirement for plotting cross-plot
-%             *** VERSION 1.07 ********************************************
-%   18/03/20: some fixes
-%            (a lesson to be learned here about noting them down ...)
-%             *** VERSION 1.08 ********************************************
-%   18/04/05: added M-score stats output
-%             *** VERSION 1.09 ********************************************
-%   18/07/20: changed initial name of 'raw' netCDF data 
-%             to help avoid potenital issues
-%             added parameters and code to extract min and max from
-%             seasonal data
-%             added code to save all points, and also in an explicit format
-%             *** VERSION 1.10 ********************************************
-%   18/08/21: rename current_path string
-%             adjusted mask path search
-%             *** VERSION 1.12 ********************************************
-%   18/10/25: added test for kplot value < 1
-%             added automatic identification of number of data columns
-%             (and of selection of explicit shapes and colors)
-%             plus checking of rows in data file (+ simple lon-lat check)
-%             *** VERSION 1.13 ********************************************
-%   18/10/25: [minor reformatting]
-%   18/10/25: shape parameter bug-fix
-%             *** VERSION 1.15 ********************************************
-%   18/11/07: added ps rendering fix ... hopefuly ...
-%             for MUTLAB version shenanigans
-%             *** VERSION 1.16 ********************************************
-%   18/11/16: further developed model-data (ASCII data) output
-%             *** VERSION 1.17 ********************************************
-%   19/01/07: added data save option
-%             plus minor site location plotting plotting adjustments
-%             *** VERSION 1.18 ********************************************
-%   19/01/10: added csv format overlay data detection
-%             added site label character filter
-%             added alternative mask of (i,j) vector (single) location
-%             *** VERSION 1.19 ********************************************
-%   19/02/27: removed zero contour line, fixed up the 2 alternatives
-%             *** VERSION 1.20 ********************************************
-%   19/03/18: bug fix for non equal area grids
-%             *** VERSION 1.21 ********************************************
-%   19/03/25: made stats plot optional (selected as secondary plot)
-%             *** VERSION 1.22 ********************************************
-%   19/03/31: removed generation of empty STATM array
-%             *** VERSION 1.24 ********************************************
-%   19/08/28: in reading data files, accounted for headers (specified by %)
-%             in counting total number of (data) lines
-%             *** VERSION 1.36 ********************************************
-%   19/10/03: [minor]
-%             *** VERSION 1.37 ********************************************
-%   19/10/03: revised data format checking
-%             *** VERSION 1.38 ********************************************
-%   20/01/07: minor adjustment to data point plotting
-%             *** VERSION 1.41 ********************************************
-%   20/03/20: added data scaling parameter backwards-compatability
-%             *** VERSION 1.42 ********************************************
-%   20/03/24: fixed error in 8-column data format
-%             *** VERSION 1.43 ********************************************
-%   20/07/25: added stats output to align with other plotting functions
-%             *** VERSION 1.44 ********************************************
-%   20/08/19: enabled parameter: contour_dashneg
-%             *** VERSION 1.45 ********************************************
-%   20/08/26: (various) + align version numbers!
-%             *** VERSION 1.46 ********************************************
-%   20/09/04: changed 3-column format from:
-%             lon, lat, label -> lon, lat, data
-%             aligned data stats calculation with sedgem_2d
-%             tested for zero SD in data
-%             *** VERSION 1.47 ********************************************
-%   20/09/04: aligned backwards compatability across functions
-%             *** VERSION 1.48 ********************************************
-%   20/09/25: adjusted data saving
-%             *** VERSION 1.49 ********************************************
-%   20/11/24: ensured stats are always saved, if calculated
-%             but only if the 'old' data output format is selected
-%             (parameter: data_output_old)
-%             Otherwise, the stats are returned by the function and
-%             can be captured and saved from there.
-%             *** VERSION 1.50 ********************************************
-%   20/12/29: replaced data file load and primary processing code
-%             *** VERSION 1.51 ********************************************
-%   20/12/30: added checks on discrete data (for stats, cross-plotting)
-%             *** VERSION 1.53 ********************************************
-%   21/02/25: switched model1 vs. model2 order in cross-plot
-%   21/04/02: added basic stats to the function return
-%             *** VERSION 1.54 ********************************************
-%   21/04/20: adjusted function return stats
-%             *** VERSION 1.55 ********************************************
-%   21/04/27: revised data read-in allowable formats
-%             *** VERSION 1.56 ********************************************
-%   21/07/05: added (back?) default vector_1
-%             *** VERSION 1.57 ********************************************
-%   21/08/27: added detection of archive files (+ unpacking then cleaning)
-%             *** VERSION 1.58 ********************************************
-%   21/08/31: added sum to returned structure, renoved NaNs from vector
-%             *** VERSION 1.59 ********************************************
-%   22/01/19: added loc_flag_unpack = false for data (not GENIE) netCDF 
-%             *** VERSION 1.60 ********************************************
-%   22/08/22: made disabling of stats version-independent [removed range]
-%             *** VERSION 1.62 ********************************************
-%   23/01/17: mostly some adjustments to returned data
-%             *** VERSION 1.63 ********************************************
-%   23/05/01: various minor + check for curve fitting toolbox
-%             and reduce stats output if necessary
-%             *** VERSION 1.64 ********************************************
-%   24/06/11: updated graphics export to pdf option for:
-%             plot_format_old = 'n'
-%             *** VERSION 1.66 ********************************************
-%   25/08/25: removed plot_format_old plot option
-%             *** VERSION 1.67 ********************************************
-%   25/10/31: upgraded gridding function
-%             added nearest neighbor (ocean cell) option
-%             *** VERSION 1.68 ********************************************
+%   25/10/31    FORKED FROM MUFFINPLOT
+%   25/10/31    changed aassumed biogem directory -> results
+%               updated netCDF filename
+%               *** VERSION 2.00 ******************************************
 %
 % *********************************************************************** %
 %%
@@ -300,7 +89,7 @@ function [OUTPUT] = plot_fields_biogem_2d(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PM
 % *** initialize ******************************************************** %
 % 
 % set version!
-par_ver = 1.68;
+par_ver = 2.00;
 % set function name
 str_function = mfilename;
 % close open windows
@@ -521,7 +310,7 @@ else
     else
         loc_flag_unpack = false;
     end
-    ncid_1=netcdf.open([par_pathin '/' exp_1 '/biogem/fields_biogem_2d.nc'],'nowrite');
+    ncid_1=netcdf.open([par_pathin '/' exp_1 '/results/biogem_fields_2d.nc'],'nowrite');
 end
 % read netCDf information
 [ndims,nvars,ngatts,unlimdimid] = netcdf.inq(ncid_1);
@@ -688,7 +477,7 @@ if ~isempty(exp_2)
     if strcmp(exp_2(end-2:end),'.nc'),
         ncid_2=netcdf.open(exp_2,'nowrite');
     else
-        ncid_2=netcdf.open([par_pathin '/' exp_2 '/biogem/fields_biogem_2d.nc'],'nowrite');
+        ncid_2=netcdf.open([par_pathin '/' exp_2 '/results/biogem_fields_2d.nc'],'nowrite');
     end
     % read netCDf information
     [ndims,nvars,ngatts,unlimdimid] = netcdf.inq(ncid_2);

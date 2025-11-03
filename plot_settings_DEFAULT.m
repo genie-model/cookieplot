@@ -1,8 +1,47 @@
-% plot_fields_settings
+% plot_settings_DEFAULT
 %
-%   ***********************************************************************
-%   *** DEFAULT PARAMETER SETTINGS FOR netCDF DATA PLOTTING ***************
-%   ***********************************************************************
+%   *******************************************************************   %
+%   *** DEFAULT PARAMETER SETTINGS FOR netCDF DATA PLOTTING ***********   %
+%   *******************************************************************   %
+%
+%   *******************************************************************   %
+
+% *********************************************************************** %
+% *** COMMON SETTINGS *************************************************** %
+% *********************************************************************** %
+%
+% *** CONTOURS AND OVERLAYS ********************************************* %
+%
+contour_plot = 'n';     % [ 'y']  Overlay contour plot?
+contour_mod = 1;        % [   1]  Number of color intervals per contour.
+contour_mod_label = 5;  % [   5]  Number of labelled contours per contour.
+contour_label = 'y';    % [ 'y']  Label contours?
+contour_dashneg = 'n';  % [ 'n']  Plot negative contours as dashed lines?
+%
+% *** COLORS AND SCALE ************************************************** %
+%
+colorbar_name='plasma'; % ['plasma'] Colorbar color scale name.
+colorbar_inv = 'n';     % [ 'n']  Invert colorbar colors?
+data_log10 = 'n';       % [ 'n']  Plot log10?
+data_offset = 0.0;     %  [ 0.0]  Applied offset (eg 273.15 for K->C)
+%
+% *** FIGURE OPTIONS AND DATA SAVING ************************************ %
+%
+plot_main = 'y';        % [ 'y']  Plot the main figure?
+plot_secondary = 'y';   % [ 'y']  Plot secondary figures?
+data_save = 'y';        % [ 'n']  Save model data (including stats)?
+%
+% *** PLOT APPEARANCE *************************************************** %
+%
+plot_equallat = 'n';    % [ 'n']  Plot with equal lat increments?
+plot_lon_origin = -180; % [-180]  Longitude origin on x-axis?
+plot_title = '';        % [  '']  Optional replacement title.
+%
+% *********************************************************************** %
+
+% *********************************************************************** %
+% *** OTHER SETTINGS **************************************************** %
+% *********************************************************************** %
 %
 %   Edit this file directly for additional user settings:
 %   NOTE: CONFIGURATION PATHS *MUST* BE CORRECT
@@ -82,9 +121,6 @@
 %      plot_format_old = 'y'; Choose 'old' style plotting?
 %                             ('new' plotting ('y') requires additional
 %                             Windows library resources)
-%      plot_format = '';      Format of 'new' syle plot (if above is 'y')
-%                             options: 'jpg', 'png', 'eps'
-%                             'pngT' adds transparency to png
 %      plot_equallat = 'n';   plot with equal lat increments 
 %                             (rather than as equal area)
 %      plot_lon_origin=-180;  Longitude origin on x-axis
@@ -115,22 +151,13 @@
 par_pathin  = 'cgenie_output'; % [ 'cgenie_output']
 par_pathout = 'PLOTS';
 par_pathdata = 'DATA';
-contour_plot = 'n';     % [ 'y']  OVERLAY CONTOUR PLOT?
-contour_mod = 1;        % [   1]  NUMBER OF COLOR INTERVALS PER CONTOR
-contour_mod_label = 5;  % [   5]  NUMBER OF LABELED CONTOURS PER CONTOUR
-contour_label = 'y';    % [ 'y']  LABEL CONTOURS?
-contour_noneg = 'n';    % [ 'n']  RESTRICT DATA PLOTTED TO > 0.0?
-contour_dashneg = 'n';  % [ 'n']  PLOT NEGATIVE CONTOURS DASHED?
 contour_hlt = 'n';      % [ 'n']  ADD HIGHLIGHT CONTOUR?
 contour_hltval = 0.0;   % [ 0.0]  HIGHLIGHT CONTOUR VALUE
 contour_hlt2 = 'n';     % [ 'n']  ADD 2nd HIGHLIGHT CONTOUR?
 contour_hltval2 = 0.0;  % [ 0.0]  2nd HIGHLIGHT CONTOUR VALUE
+contour_noneg = 'n';    % [ 'n']  RESTRICT DATA PLOTTED TO > 0.0?
 contour_zero = 'y';     % [ 'y']  PLOT ZERO CONTOUR
 contour_file = '';      % [  '']  OPTIONAL EXTERNAL PLOTTING SCALE
-colorbar_name='plasma'; % ['plasma'] COLORBAR COLOR SCALE NAME
-colorbar_inv = 'n';     % [ 'n']  INVERT COLORBAR
-data_log10 = 'n';       % [ 'n']  PLOT LOG10 OF THE DATA
-data_offset = 0.0;      % [ 0.0]  APPLIED DATA OFFSET (to model)
 data_ijk = 'n';         % [ 'n']  DATA AS (i,j,(k)) VS. (lon,lat,depth)?
 data_ijk_mean = 'n';    % [ 'n']  AVERAGE DATA BY MODEL CELL?
 data_shapecol = 'n';    % [ 'n']  DATA COLUMNS TO SET POINT SHAPE & COLOR?
@@ -147,7 +174,6 @@ data_fontsz = 8;        % [   8]  LABEL FONT SIZE
 data_stats = 'n';       % [ 'n']  CALCULATE & PLOT STATS?
 data_fit_n = 1;         % [   1]  POLYNOMIAL FIT ORDER
 data_scalepoints = 'y'; % [ 'y']  ALSO SCALE DATA POINTS (same as model)?
-data_save = 'y';        % [ 'n']  SAVE MODEL DATA?
 data_saveall = 'n';     % [ 'n']  SAVE ALL DATA (in plotted section)?
 data_saveallinfo = 'n'; % [ 'n']  SAVE ALL DATA + grid info?
 data_minmax = '';       % [ '']  EXTRACT MIN / MAX FROM SEASONAL DATA
@@ -169,14 +195,9 @@ plot_opsi_min = -20;    % [ -20]  MINIMUM STREAMFUNCTION VALUE
 plot_opsi_max = +20;    % [ +20]  MAXIMUM STREAMFUNCTION VALUE
 plot_opsi_dminor = 2;   % [   2]  MINOR STREAMFUNCTION CONTOUR INCREMENT
 plot_opsi_dmajor = 4;   % [   4]  MAJOR STREAMFUNCTION CONTOUR 
-plot_main = 'y';        % [  '']  PLOT THE MAIN FIGURE
-plot_secondary = 'y';   % [  '']  PLOT SECONDARY FIGURES
 plot_format_old = 'n';  % [ 'y']  'OLD' STYLE PLOTTING
 plot_format = '';       % [  '']  FORMAT OF (NEW STYLE) PLOT
-plot_equallat = 'n';    % [ 'n']  PLOT WITH EQUAL LAT INCREMENTS
-plot_lon_origin = -180; % [-180]  STARTING LONGITUDE FOR X-AXIS
 plot_lon_delta = 90;    % [  90]  INCREMENT OF LONGITUDE ON X-AXIS
-plot_title = '';        % [  '']  OPTIONAL REPLACEMENT TITLE
 plot_dscrsz = 0.60;     % [0.60]  FRACTIONAL FIGURE WINDOW SIZE
 plot_lon_min = 0;       % [   0]  OPTIONAL MIN PLOTTING LIMIT (LON)
 plot_lon_max = 0;       % [   0]  OPTIONAL MIN PLOTTING LIMIT (LON)

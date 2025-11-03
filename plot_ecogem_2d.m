@@ -1,12 +1,12 @@
-function [OUTPUT] = plot_fields_ecogem_2d(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PMASK,PCSCALE,PCMIN,PCMAX,PCN,PDATA,POPT,PNAME)
-% plot_fields_ecogem_2d
+function [OUTPUT] = plot_ecogem_2d(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PMASK,PCSCALE,PCMIN,PCMAX,PCN,PDATA,POPT,PNAME)
+% plot_ecogem_fields_2d
 %
 %   *******************************************************************   %
 %   *** ecogem 2-D (LON-LAT) DATA PLOTTING ****************************   %
 %   *******************************************************************   %
 %
-%   plot_fields_ecogem_2d(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PMASK,PCSCALE,PCMIN,PCMAX,PCN,PDATA,POPT,PNAME)
-%   plots the BIOGEM 2-D netCDF data file 'plot_fields_ecogem_2d.nc' and takes 15 arguments:
+%   plot_ecogem_2d(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PMASK,PCSCALE,PCMIN,PCMAX,PCN,PDATA,POPT,PNAME)
+%   plots the BIOGEM 2-D netCDF data file 'ecogem_fields_2d.nc' and takes 15 arguments:
 %
 %   PEXP1 [STRING] (e.g. 'preindustrial_spinup')
 %   --> the (first) experiment name
@@ -44,7 +44,7 @@ function [OUTPUT] = plot_fields_ecogem_2d(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PM
 %   --> the number of (contor) intervals between minimum and maximum
 %       scale values
 %   PDATA [STRING] (e.g. 'obs_d13C.dat')
-%   --> the filename containing any overlay data set,
+%   --> the filename containing any overlay data set,ts(t)ecogem    
 %       which must be formatted as (space) seperated columns of:
 %       lon, lat, value, label
 %       or, of the option (below) data_ij = 'y', then as:
@@ -61,7 +61,7 @@ function [OUTPUT] = plot_fields_ecogem_2d(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PM
 %       then a filename is automatically generated
 %
 %   Example
-%           plot_fields_ecogem_2d('experiment_1','','ocn_sur_PO4','',1994.5,-1,14,'',1e-6,0.0,2.0,20,'','','')
+%           plot_ecogem_2d('experiment_1','','ocn_sur_PO4','',1994.5,-1,14,'',1e-6,0.0,2.0,20,'','','')
 %           will plot the time-slice cenetered on a time of 1994.5,
 %           of bottom-water [PO4] in units of umol kg-1,
 %           between 0 and 2 umol kg-1 with 20 contour intervals
@@ -74,10 +74,8 @@ function [OUTPUT] = plot_fields_ecogem_2d(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PM
 % ***** HISTORY ********************************************************* %
 % *********************************************************************** %
 %
-%   21/09/30: copied from plot_fields_biogem_2d
-%             first-pass removal of non ECOGEM relevant code
-%             improved automatic title and y-axis labelling
-%             *** VERSION 1.60 ********************************************
+%   25/10/23: COPIED FORM plot_fields_biogem_2d.m
+%             *** VERSION 1.67 ********************************************
 %
 % *********************************************************************** %
 %%
@@ -89,7 +87,7 @@ function [OUTPUT] = plot_fields_ecogem_2d(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PM
 % *** initialize ******************************************************** %
 % 
 % set version!
-par_ver = 1.60;
+par_ver = 1.67;
 % set function name
 str_function = mfilename;
 % close open windows
@@ -105,23 +103,23 @@ str_mutlab = tmp_mutlab(1:4);
 par_mutlab = str2num(str_mutlab);
 %
 % *** backwards compatability ******************************************* %
-% % 
-% % data point scaling
-% if ~exist('data_scalepoints','var'), data_scalepoints = 'n'; end
-% % data saving
-% if ~exist('data_save','var'),        data_save = 'y'; end % save (mode) data?
-% if ~exist('data_saveall','var'),     data_saveall = 'n'; end
-% if ~exist('data_saveallinfo','var'), data_saveallinfo = 'n'; end
-% if ~exist('data_output_old','var'),  data_output_old = 'y'; end % return STATM
-% % extracting min / max / range from seasonal data
-% if ~exist('data_minmax','var'),      data_minmax  = ''; end
-% if ~exist('data_nseas','var'),       data_nseas   = 0; end
-% % model-data
-% if ~exist('data_seafloor','var'),    data_seafloor = 'n'; end
-% % plotting
-% if ~exist('contour_hlt2','var'),     contour_hlt2 = contour_hlt; end
-% if ~exist('contour_hltval2','var'),  contour_hltval2 = contour_hltval; end
-% if ~exist('plot_psi','var'),         plot_psi = 'n'; end
+% 
+% data point scaling
+if ~exist('data_scalepoints','var'), data_scalepoints = 'n'; end
+% data saving
+if ~exist('data_save','var'),        data_save = 'y'; end % save (mode) data?
+if ~exist('data_saveall','var'),     data_saveall = 'n'; end
+if ~exist('data_saveallinfo','var'), data_saveallinfo = 'n'; end
+if ~exist('data_output_old','var'),  data_output_old = 'y'; end % return STATM
+% extracting min / max / range from seasonal data
+if ~exist('data_minmax','var'),      data_minmax  = ''; end
+if ~exist('data_nseas','var'),       data_nseas   = 0; end
+% model-data
+if ~exist('data_seafloor','var'),    data_seafloor = 'n'; end
+% plotting
+if ~exist('contour_hlt2','var'),     contour_hlt2 = contour_hlt; end
+if ~exist('contour_hltval2','var'),  contour_hltval2 = contour_hltval; end
+if ~exist('plot_psi','var'),         plot_psi = 'n'; end
 % paths
 if ~exist('par_pathin','var'),   par_pathin   = 'cgenie_output'; end
 if ~exist('par_pathlib','var'),  par_pathlib  = 'source'; end
@@ -129,10 +127,10 @@ if ~exist('par_pathout','var'),  par_pathout  = 'PLOTS'; end
 if ~exist('par_pathdata','var'), par_pathdata = 'DATA'; end
 if ~exist('par_pathmask','var'), par_pathmask = 'MASKS'; end
 if ~exist('par_pathexam','var'), par_pathexam = 'EXAMPLES'; end
-% % plotting panel options
-% if ~exist('plot_profile','var'), plot_profile = 'y'; end % PLOT PROFILE
-% if ~exist('plot_zonal','var'),   plot_zonal   = 'y'; end % PLOT ZONAL
-% if ~exist('plot_histc_SETTINGS','var'), plot_histc_SETTINGS = 'plot_histc_SETTINGS'; end % histc plotting settings
+% plotting panel options
+if ~exist('plot_profile','var'), plot_profile = 'y'; end % PLOT PROFILE
+if ~exist('plot_zonal','var'),   plot_zonal   = 'y'; end % PLOT ZONAL
+if ~exist('plot_histc_SETTINGS','var'), plot_histc_SETTINGS = 'plot_histc_SETTINGS'; end % histc plotting settings
 %
 % *** initialize parameters ********************************************* %
 % 
@@ -187,16 +185,16 @@ end
 % set global flag if no alt plotting scale is set
 % NOTE: catch possibility of one axis being set, but the other @ default
 %       (min and max with indetical values)
-if ((plot_lat_min == plot_lat_max) && (plot_lon_min == plot_lon_max))
+if ((plot_lat_min == plot_lat_max) && (plot_lon_min == plot_lon_max)),
     plot_global = true;
     plot_xy_scaling = 1.0;
 else
     plot_global = false;
-    if (plot_lat_min == plot_lat_max)
+    if (plot_lat_min == plot_lat_max),
         plot_lat_min = lat_min;
         plot_lat_max = lat_max;
     end
-    if (plot_lon_min == plot_lon_max)
+    if (plot_lon_min == plot_lon_max),
         plot_lon_min = lon_min;
         plot_lon_max = lon_max;
     end
@@ -212,7 +210,7 @@ str_current_path = pwd;
 str_function_path = which(str_function);
 str_function_path = str_function_path(1:end-length(str_function)-3);
 % check source code directory and add search path
-if ~(exist([str_function_path '/' par_pathlib],'dir') == 7)
+if ~(exist([str_function_path '/' par_pathlib],'dir') == 7),
     disp([' * ERROR: Cannot find source directory']);
     disp([' ']);
     return;
@@ -220,9 +218,9 @@ else
     addpath([str_function_path '/' par_pathlib]);
 end
 % check masks directory and add search path
-if (exist([str_current_path '/' par_pathmask],'dir') == 7)
+if (exist([str_current_path '/' par_pathmask],'dir') == 7),
     addpath([str_current_path '/' par_pathmask]);
-elseif (exist([str_function_path '/' par_pathmask],'dir') == 7)
+elseif (exist([str_function_path '/' par_pathmask],'dir') == 7),
     addpath([str_function_path '/' par_pathmask]);
 else
     disp([' * ERROR: Cannot find MASKS directory -- was it moved ... ?']);
@@ -231,7 +229,7 @@ else
 end
 % set input path
 par_pathin = [str_current_path '/' par_pathin];
-if ~(exist(par_pathin,'dir') == 7)
+if ~(exist(par_pathin,'dir') == 7),
     disp([' * ERROR: Cannot find experiment results directory']);
     disp([' ']);
     return;
@@ -240,17 +238,12 @@ end
 par_pathout = [str_current_path '/' par_pathout];
 if ~(exist(par_pathout,'dir') == 7), mkdir(par_pathout);  end
 % check/add data path
-if ~(exist([str_current_path '/' par_pathdata],'dir') == 7)
+if ~(exist([str_current_path '/' par_pathdata],'dir') == 7),
     mkdir([str_current_path '/' par_pathdata]); 
 end
 addpath([str_current_path '/' par_pathdata]);
 % check plot format setting
 if ~isempty(plot_format), plot_format_old='n'; end
-% add plotting paths
-if (plot_format_old == 'n')
-    addpath([str_function_path '/' par_pathlib '/xpdfbin-win-3.03/bin32']);
-    addpath([str_function_path '/' par_pathlib '/export_fig']);
-end
 % now make make str_function text-friendly
 str_function = strrep(str_function,'_','-');
 %
@@ -289,8 +282,9 @@ data_2=[];
 %
 % open netCDF file -- test for 'experiment format' or not
 % NOTE: other format is indicated by '.nc' extension as experiment ID
-if strcmp(exp_1(end-2:end),'.nc'),
+if strcmp(exp_1(end-2:end),'.nc')
     ncid_1=netcdf.open(exp_1,'nowrite');
+    loc_flag_unpack = false;
 else
     % test for experiment
     data_dir = [par_pathin '/' exp_1];
@@ -313,7 +307,7 @@ else
     else
         loc_flag_unpack = false;
     end
-    ncid_1=netcdf.open([par_pathin '/' exp_1 '/ecogem/fields_ecogem_2d.nc'],'nowrite');
+    ncid_1=netcdf.open([par_pathin '/' exp_1 '/results/ecogem_fields_2d.nc'],'nowrite');
 end
 % read netCDf information
 [ndims,nvars,ngatts,unlimdimid] = netcdf.inq(ncid_1);
@@ -349,8 +343,19 @@ varid  = netcdf.inqVarID(ncid_1,'lon_edges');
 grid_lon_edges = netcdf.getVar(ncid_1,varid) + lon_offset;
 [lonw lats] = meshgrid(grid_lon_edges(1:imax),grid_lat_edges(1:jmax));
 [lone latn] = meshgrid(grid_lon_edges(2:imax+1),grid_lat_edges(2:jmax+1));
+% PSI
+if (plot_psi == 'y'),
+    varid  = netcdf.inqVarID(ncid_1,'lat_psi');
+    grid_lat_psi = netcdf.getVar(ncid_1,varid);
+    varid  = netcdf.inqVarID(ncid_1,'lon_psi');
+    grid_lon_psi = netcdf.getVar(ncid_1,varid);
+    [lonpsi latpsi] = meshgrid(grid_lon_psi(1:imax),grid_lat_psi(1:jmax+1));
+else
+    lonpsi = [];
+    latpsi = [];
+end
 % Non-uniform lat grid
-if (plot_equallat == 'n')
+if (plot_equallat == 'n'),
     lat_max = sin(pi*lat_max/180.0);
     lat_min = sin(pi*lat_min/180.0);
     latn = sin(pi*latn/180.0);
@@ -393,7 +398,7 @@ while exist('time','var') == 0
     if exist('time','var') == 0
         disp('   > WARNING: Year #1 must be one of the following;');
         format long g;
-        double(int32(100*timeslices(:)))/100.0
+        double(int32(100*timeslices(:)))/100
         format;
         timesliceid_1 = input('   > Time-slice year: ');
     end
@@ -454,21 +459,6 @@ if ~isempty(plot_dataid_alt1)
     data_1 = flipud(data_1);
 end
 %
-% *** GET DATA FIELD INFO *********************************************** %
-%
-% get full data field info
-str_long_name = '';
-str_units = '';
-varinfo = ncinfo([par_pathin '/' exp_1 '/ecogem/fields_ecogem_2d.nc'],varname);
-for n = 1:length(varinfo.Attributes)
-    if strcmp(varinfo.Attributes(n).Name,'long_name')
-        str_long_name = varinfo.Attributes(n).Value;
-    end
-    if strcmp(varinfo.Attributes(n).Name,'units')
-        str_units = varinfo.Attributes(n).Value;
-    end
-end
-%
 % *********************************************************************** %
 
 % *********************************************************************** %
@@ -481,10 +471,10 @@ end
 if ~isempty(exp_2)
     % open netCDF file -- test for 'experiment format' or not
     % NOTE: other format is indicated by '.nc' extension as experiment ID
-    if strcmp(exp_2(end-2:end),'.nc')
+    if strcmp(exp_2(end-2:end),'.nc'),
         ncid_2=netcdf.open(exp_2,'nowrite');
     else
-        ncid_2=netcdf.open([par_pathin '/' exp_2 '/ecogem/fields_ecogem_2d.nc'],'nowrite');
+        ncid_2=netcdf.open([par_pathin '/' exp_2 '/results/ecogem_fields_2d.nc'],'nowrite');
     end
     % read netCDf information
     [ndims,nvars,ngatts,unlimdimid] = netcdf.inq(ncid_2);
@@ -502,7 +492,7 @@ if timesliceid_2 >= 0.0
     clear time;
     while exist('time','var') == 0
         for n = 1:dimlen,
-            if double(int32(100*timeslices(n)))/100.0 == timesliceid_2
+            if double(int32(100*timeslices(n)))/100 == timesliceid_2
                 time = timesliceid_2;
                 tid = n;
             end
@@ -510,7 +500,7 @@ if timesliceid_2 >= 0.0
         if exist('time','var') == 0
             disp('   > WARNING: Year #2 must be one of the following;');
             format long g;
-            double(int32(100*timeslices(:)))/100.0
+            double(int32(100*timeslices(:)))/100
             format;
             timesliceid_2 = input('   > Time-slice year: ');
         end
@@ -550,21 +540,21 @@ end
 % *** LOAD ALT DATA ***************************************************** %
 %
 data_2(:,:) = zeros(jmax,imax);
-if (~isempty(exp_2) || (timesliceid_2 >= 0.0) || ~isempty(dataid_2))
+if (~isempty(exp_2) || (timesliceid_2 >= 0.0) || ~isempty(dataid_2)),
     [varname,xtype,dimids,natts] = netcdf.inqVar(ncid_2,varid);
     netcdfdata = netcdf.getVar(ncid_2,varid);
     if length(dimids) == 3
         rawdata(1:imax,1:jmax) = netcdfdata(1:imax,1:jmax,tid);
         switch data_minmax,
             case {'min','minmax'}
-                for j = 1:jmax
-                    for i = 1:imax
+                for j = 1:jmax,
+                    for i = 1:imax,
                         rawdata(i,j) = min(netcdfdata(i,j,tid:tid+data_nseas-1));
                     end
                 end
             case 'max'
-                for j = 1:jmax
-                    for i = 1:imax
+                for j = 1:jmax,
+                    for i = 1:imax,
                         rawdata(i,j) = max(netcdfdata(i,j,tid:tid+data_nseas-1));
                     end
                 end
@@ -581,6 +571,63 @@ end
 if ~isempty(plot_dataid_alt2)
     data_2 = load([plot_dataid_alt2],'-ascii');
     data_2 = flipud(data_2);
+end
+%
+% *********************************************************************** %
+
+% *********************************************************************** %
+% *** OPTIONAL (u,v) VELOCITY DATA OVERLAY ****************************** %
+% *********************************************************************** %
+%
+if (data_uv == 'y'),
+    varid  = netcdf.inqVarID(ncid_1,'phys_tau_u');
+    [varname,xtype,dimids,natts] = netcdf.inqVar(ncid_1,varid);
+    rawdata = netcdf.getVar(ncid_1,varid);
+    if length(dimids) == 3
+        rawdata(1:imax,1:jmax) = rawdata(1:imax,1:jmax,tid);
+        data_u(1:jmax,1:imax) = rawdata(1:imax,1:jmax)';
+    elseif length(dimids) == 2
+        rawdata(1:imax,1:jmax) = rawdata(1:imax,1:jmax);
+        data_u(1:jmax,1:imax) = rawdata(1:imax,1:jmax)';
+        data_u(:,:) = NaN;
+    end
+    varid  = netcdf.inqVarID(ncid_1,'phys_tau_v');
+    [varname,xtype,dimids,natts] = netcdf.inqVar(ncid_1,varid);
+    rawdata = netcdf.getVar(ncid_1,varid);
+    if length(dimids) == 3
+        rawdata(1:imax,1:jmax) = rawdata(1:imax,1:jmax,tid);
+        data_v(1:jmax,1:imax) = rawdata(1:imax,1:jmax)';
+    elseif length(dimids) == 2
+        rawdata(1:imax,1:jmax) = rawdata(1:imax,1:jmax);
+        data_v(1:jmax,1:imax) = rawdata(1:imax,1:jmax)';
+    else
+        data_v(:,:) = NaN;
+    end
+else
+    data_u(:,:,:) = zeros(size(data_1));
+    data_v(:,:,:) = zeros(size(data_1));
+end
+%
+% *********************************************************************** %
+
+% *********************************************************************** %
+% *** OPTIONAL psi DATA OVERLAY ***************************************** %
+% *********************************************************************** %
+%
+if exist('plot_psi','var')
+    if (plot_psi == 'y'),
+        varid  = netcdf.inqVarID(ncid_1,'phys_psi');
+        [varname,xtype,dimids,natts] = netcdf.inqVar(ncid_1,varid);
+        rawdata = netcdf.getVar(ncid_1,varid);
+        if length(dimids) == 3
+            rawdata(1:imax,1:jmax+1)  = rawdata(1:imax,1:jmax+1,tid);
+            data_psi(1:jmax+1,1:imax) = rawdata(1:imax,1:jmax+1)';
+        elseif length(dimids) == 2
+            rawdata(1:imax,1:jmax+1)  = rawdata(1:imax,1:jmax+1);
+            data_psi(1:jmax+1,1:imax) = rawdata(1:imax,1:jmax+1)';
+            data_psi(:,:) = NaN;
+        end
+    end
 end
 %
 % *********************************************************************** %
@@ -609,12 +656,12 @@ if ~isempty(maskid)
     end
     filename = [filename, '.', maskid];
 end
-if ~isempty(overlaydataid)
+if ~isempty(overlaydataid),
     filename = [filename, '_VS_', overlaydataid];
     if (data_anomoly == 'y'),
         filename = [filename, '.ANOM'];
     end
-    if (data_only == 'y')
+    if (data_only == 'y'),
         filename = [filename, '.DO'];
     end
 end
@@ -636,11 +683,18 @@ end
 %
 xm = lonm;
 ym = latm;
+z_u(:,:) = data_u(:,:);
+z_v(:,:) = data_v(:,:);
+if exist('plot_psi','var')
+    if (plot_psi == 'y'),
+        z_psi(:,:) = data_psi(:,:);
+    end
+end
 %
 % *** PROCESS MAIN DATASET ********************************************** %
 %
-for i = 1:imax
-    for j = 1:jmax
+for i = 1:imax,
+    for j = 1:jmax,
         if grid_k1(j,i) > 90
             if plot_landvalues == 'n'
                 data_1(j,i) = NaN;
@@ -713,16 +767,16 @@ zz = zeros(jmax,1);
 zz_A = zz;
 %
 % NOTE: unit area grid => no need for explicit scaling factor
-for j = 1:jmax
+for j = 1:jmax,
     n = 0;
-    for i = 1:imax
-        if ~isnan(data(j,i))
+    for i = 1:imax,
+        if ~isnan(data(j,i)),
             zz(j)   = zz(j) + 1.0*data(j,i);
             zz_A(j) = zz_A(j) + 1.0;
             n = n + 1;
         end
     end
-    if (zz_A(j) > 0.0)
+    if (zz_A(j) > 0.0),
         zz(j) = zz(j)/zz_A(j);
     else
         zz_A(j) = NaN;
@@ -742,7 +796,8 @@ if ~isempty(overlaydataid)
     cdata    = file_data.cdata;
     v_format = file_data.vformat;
     % determine number of rows and columns
-    n_rows    = length(cdata);
+    n_size    = size(cdata);
+    n_rows    = n_size(1);
     n_columns = length(v_format);
     % parse call array data
     flag_format = false;
@@ -820,14 +875,14 @@ if ~isempty(overlaydataid)
         return;
     end
     % filter label
-    for n = 1:n_rows
+    for n = 1:n_rows,
         overlaylabel_raw(n,:) = strrep(overlaylabel_raw(n,:),'_',' ');
     end
     % determine data size
     overlaydata_size = size(overlaydata_raw(:,:));
     nmax=overlaydata_size(1);
     % check for incomplete file read
-    if (nmax < n_rows)
+    if (nmax < n_rows),
         disp([' ']);
         disp([' * ERROR: Problem in data format (e.g. string must not contain spaces):']);
         disp(['   Number of data rows read == ' num2str(nmax)]);
@@ -848,7 +903,7 @@ if ~isempty(overlaydataid)
     % create (i,j) from (lon,lat) and vice versa (depending on data input type)
     if (data_ijk == 'n')
         % precondition lon
-        for n = 1:nmax
+        for n = 1:nmax,
             if (overlaydata_raw(n,1) >= (360.0 + grid_lon_origin)),
                 overlaydata_raw(n,1) = overlaydata_raw(n,1) - 360.0;
             end
@@ -861,7 +916,7 @@ if ~isempty(overlaydataid)
         %       i.e., the same as the raw overlay data, which is (lon,lat) (i.e., (i,j)) format
         % NOTE: !!! gridded data is (j,i) !!!
         overlaydata_ij(:,:) = zeros(size(overlaydata_raw(:,:)));
-        for n = 1:nmax
+        for n = 1:nmax,
             overlaydata_ij(n,1:2) = calc_find_ij(overlaydata_raw(n,1),overlaydata_raw(n,2),grid_lon_origin,imax,jmax);
         end
         overlaydata_ij(:,3) = overlaydata_raw(:,3);
@@ -874,7 +929,7 @@ if ~isempty(overlaydataid)
     end
     % remove data in land cells
     if (data_land == 'n')
-        for n = 1:nmax
+        for n = 1:nmax,
             if isnan(zm(overlaydata_ij(n,2),overlaydata_ij(n,1)))
                 overlaydata_raw(n,3) = NaN;
                 overlaydata_ij(n,3)  = NaN;
@@ -924,10 +979,38 @@ if ~isempty(overlaydataid)
         overlaylabel(end,:) = [];
         nmax=m;
         % save data on grid
-        fprint_2D_d(overlaydata_gridded(:,:),[overlaydatafile, '.griddedOBS.', str_date, '.dat']);
+        fprint_2D_d(overlaydata_gridded(:,:),[overlaydataid, '.griddedOBS.', str_date, '.dat']);
     end
     % scale overlay data
     overlaydata(:,3) = overlaydata(:,3)/datapoint_scale;
+    % set uniform marker shape and color:
+    % circle if not otherwise specified
+    % square if data is re-gridded
+    if (data_shapecol == 'n')
+        for n = 1:nmax
+            overlaydata_shape(n) = 'o';
+            overlaydata_ecol(n) = data_sitecolor;
+            if ( (data_only == 'y') && (data_siteonly == 'y') )
+                overlaydata_fcol(n) = data_sitecolor;
+            else
+                overlaydata_fcol(n) = '-';
+            end
+        end
+    end
+    if (data_ijk_mean == 'y')
+        for n = 1:nmax
+            overlaydata_shape(n) = 's';
+        end
+    end
+    % finally -- check there is any data left ... if not, flag as no data ...
+    % (and warn)
+    if (nmax == 0)
+        disp([' ']);
+        disp([' * WARNING: there is no remaining overlay data after filtering/averaging']);
+        disp(['   Disabling overlay data ...'])
+        disp([' ']);
+        overlaydataid = [];
+    end
 end
 %
 % *********************************************************************** %
@@ -944,7 +1027,7 @@ end
 %
 if ~isempty(dataid_2)
     %
-    % *** 3D (GRIDDED) DATA ********************************************* %
+    % *** 2D (GRIDDED) DATA ********************************************* %
     %
     % transform data sets in vectors
     data_vector_1 = reshape(data_1(:,:),imax*jmax,1);
@@ -990,21 +1073,26 @@ if (~isempty(overlaydataid) && ((data_only == 'n') || (data_anomoly == 'y')))
     % *** DISCRETE DATA ************************************************* %
     %
     % set overlay data vector
+    data_vector_1 = [];
     data_vector_1 = overlaydata(:,3);
     % disable stats if necessary
-    if ( (length(data_vector_1) < 2) || (range(data_vector_1) == 0.0) ), data_stats = 'n'; end
+    if ( length(data_vector_1) < 2 )
+        data_stats = 'n';
+    elseif ( (max(data_vector_1) - min(data_vector_1)) == 0.0 )
+        data_stats = 'n';
+    end
     % populate the gridded dataset vector with values corresponding to
     % the overlay data locations
     % NOTE: !!! data is (j,i) !!! (=> swap i and j)
     % NOTE: re-orientate data_vector_2 to match data_vector_1
-    for n = 1:nmax,
+    for n = 1:nmax
         data_vector_2(n) = data(overlaydata_ij(n,2),overlaydata_ij(n,1));
     end
     data_vector_2 = data_vector_2';
     % filter data
     data_vector_2(find(data_vector_2(:) < -1.0E6)) = NaN;
     data_vector_2(find(data_vector_2(:) > 0.9E36)) = NaN;
-    if ((data_stats == 'y') && (data_only == 'n')),
+    if ((data_stats == 'y') && (data_only == 'n'))
         % calculate stats
         STATM = calc_allstats(data_vector_1,data_vector_2);
         if (plot_secondary=='y')
@@ -1058,12 +1146,12 @@ end
 % *** SAVE EQUIVALENT MODEL DATA **************************************** %
 %
 % save model data at the data locations
-if (data_save == 'y')
+if (data_save == 'y'),
     if (~isempty(overlaydataid) && (data_only == 'n'))
         fid = fopen([par_pathout '/' filename '_MODELDATAPOINTS', '.', str_date '.dat'], 'wt');
         fprintf(fid, '%% Model value at data locations');
         fprintf(fid, '\n');
-        if (data_ijk == 'y')
+        if (data_ijk == 'y'),
             fprintf(fid, '%% Format: i, j, model lon, model lat, model value, data value, data label');
         elseif (data_ijk_mean == 'y')
             fprintf(fid, '%% Format: i, j, model lon, model lat, model value, re-gridded data value, (no data label)');
@@ -1071,15 +1159,15 @@ if (data_save == 'y')
             fprintf(fid, '%% Format: i, j, data lon, data lat, model value, data value, data label');
         end
         fprintf(fid, '\n');
-        for n = 1:nmax
+        for n = 1:nmax,
             fprintf(fid, '%d %d %8.3f %8.3f %8.6e %8.6e %s \n', int16(overlaydata_ij(n,1)), int16(overlaydata_ij(n,2)), overlaydata(n,1), 180.0*asin(overlaydata(n,2))/pi, data_vector_2(n), data_vector_1(n), overlaylabel(n,:));
         end
         fclose(fid);
-    elseif (~isempty(overlaydataid) && (data_only == 'y') && (data_anomoly == 'n') )
+    elseif (~isempty(overlaydataid) && (data_only == 'y') && (data_anomoly == 'n') ),
         fid = fopen([par_pathout '/' filename '_DATAPOINTS', '.', str_date '.dat'], 'wt');
         fprintf(fid, '%% Data');
         fprintf(fid, '\n');
-        if (data_ijk == 'y')
+        if (data_ijk == 'y'),
             fprintf(fid, '%% Format: i, j, model lon, model lat, data value, data label');
         elseif (data_ijk_mean == 'y')
             fprintf(fid, '%% Format: i, j, model lon, model lat, re-gridded data value, (no data label)');
@@ -1087,15 +1175,15 @@ if (data_save == 'y')
             fprintf(fid, '%% Format: i, j, data lon, data lat, data value, data label');
         end
         fprintf(fid, '\n');
-        for n = 1:nmax
+        for n = 1:nmax,
             fprintf(fid, '%d %d %8.3f %8.3f %8.6e %s \n', int16(overlaydata_ij(n,1)), int16(overlaydata_ij(n,2)), overlaydata(n,1), 180.0*asin(overlaydata(n,2))/pi, data_vector_1(n), overlaylabel(n,:));
         end
         fclose(fid);
-    elseif (~isempty(overlaydataid) && (data_only == 'y') && (data_anomoly == 'y') )
+    elseif (~isempty(overlaydataid) && (data_only == 'y') && (data_anomoly == 'y') ),
         fid = fopen([par_pathout '/' filename '_DATAANOMPOINTS', '.', str_date '.dat'], 'wt');
         fprintf(fid, '%% Model-data anomoly');
         fprintf(fid, '\n');
-        if (data_ijk == 'y')
+        if (data_ijk == 'y'),
             fprintf(fid, '%% Format: i, j, model lon, model lat, data anomaly, data label');
         elseif (data_ijk_mean == 'y')
             fprintf(fid, '%% Format: i, j, model lon, model lat, re-gridded data anomaly, (no data label)');
@@ -1103,7 +1191,7 @@ if (data_save == 'y')
             fprintf(fid, '%% Format: i, j, data lon, data lat, data anomaly, data label');
         end
         fprintf(fid, '\n');
-        for n = 1:nmax
+        for n = 1:nmax,
             fprintf(fid, '%d %d %8.3f %8.3f %8.6e %s \n', int16(overlaydata_ij(n,1)), int16(overlaydata_ij(n,2)), overlaydata(n,1), 180.0*asin(overlaydata(n,2))/pi, data_vector_2(n) - data_vector_1(n), overlaylabel(n,:));
         end
         fclose(fid);
@@ -1113,8 +1201,8 @@ if (data_save == 'y')
         fprintf(fid, '\n');
         fprintf(fid, '%% Format: i, j, model lon, model lat, model value');
         fprintf(fid, '\n');
-        for j = 1:jmax
-            for i = 1:imax
+        for j = 1:jmax,
+            for i = 1:imax,
                 loc_i = i;
                 loc_j = j;
                 loc_lon = xm(j,i);
@@ -1183,6 +1271,13 @@ if ~isempty(overlaydataid)
         end
     end
 end
+if exist('plot_psi','var')
+    if (plot_psi == 'y'),
+        xpsi_ex = [lonpsi - 360.0 lonpsi + 000.0 lonpsi + 360.0];
+        ypsi_ex = [latpsi + 000.0 latpsi + 000.0 latpsi + 000.0];
+        zpsi_ex = [z_psi z_psi z_psi];
+    end
+end
 %
 % *********************************************************************** %
 
@@ -1201,26 +1296,16 @@ if (plot_main == 'y')
     if (par_mutlab > 2015), hfig.Renderer='Painters'; end    
     clf;
     % define plotting regions
-    if (plot_format_old == 'y')
-        fh(1) = axes('Position',[0 0 1 1],'Visible','off');
-        fh(2) = axes('Position',[0.10 0.05 0.65 0.90]);
-        fh(3) = axes('Position',[0.80 0.27 0.20 0.46],'Visible','off');
-    else
-        fh(1) = axes('Position',[0 0 1 1],'Visible','off');
-        fh(2) = axes('Position',[0.15 0.15 0.65 0.70]);
-        fh(3) = axes('Position',[0.75 0.15 0.15 0.70],'Visible','off');
-    end
+    fh(1) = axes('Position',[0 0 1 1],'Visible','off');
+    fh(2) = axes('Position',[0.10 0.05 0.65 0.90]);
+    fh(3) = axes('Position',[0.80 0.27 0.20 0.46],'Visible','off');
     % define colormap
     cmap = make_cmap(colorbar_name,con_n+2);
     if (colorbar_inv == 'y'), cmap = flipdim(cmap,1); end
     colormap(cmap);
     % date-stamp plot
     set(gcf,'CurrentAxes',fh(1));
-    if (plot_format_old == 'y')
-        text(0.95,0.50,[str_function, ' / ', 'on: ', str_date],'FontName','Arial','FontSize',8,'Rotation',90.0,'HorizontalAlignment','center','VerticalAlignment','top');
-    else
-        text(0.85,0.50,[str_function, ' / ', 'on: ', str_date],'FontName','Arial','FontSize',8,'Rotation',90.0,'HorizontalAlignment','center','VerticalAlignment','top');
-    end
+    text(0.95,0.50,[str_function, ' / ', 'on: ', str_date],'FontName','Arial','FontSize',8,'Rotation',90.0,'HorizontalAlignment','center','VerticalAlignment','top');
     %
     % *** SET PLOT SCALE ************************************************ %
     %
@@ -1257,10 +1342,10 @@ if (plot_main == 'y')
     caxis([con_min-(con_max-con_min)/con_n con_max]);
     set(gca,'PlotBoxAspectRatio',[1.0 plot_xy_scaling*0.5 1.0]);
     axis([lon_min lon_max lat_min lat_max]);
-    if plot_global
+    if plot_global,
         axis([lon_min lon_max lat_min lat_max]);
         set(gca,'XLabel',text('String','Longitude','FontSize',15),'XTick',[lon_min:plot_lon_delta:lon_max]);
-        if (plot_equallat == 'n')
+        if (plot_equallat == 'n'),
             set(gca,'YLabel',text('String','Latitude','FontSize',15),'YTick',[-1 -0.866 -0.5 0 0.5 0.866 1], 'YTickLabel',{'-90';'-60';'-30';'0';'30';'60';'90'});
         else
             set(gca,'YLabel',text('String','Latitude','FontSize',15),'YTick',[-90.0 -60.0 -30.0 0 30.0 60.0 90.0], 'YTickLabel',{'-90';'-60';'-30';'0';'30';'60';'90'});
@@ -1268,7 +1353,7 @@ if (plot_main == 'y')
     else
         axis([plot_lon_min plot_lon_max plot_lat_min plot_lat_max]);
         set(gca,'XLabel',text('String','Longitude','FontSize',15),'XTick',[plot_lon_min plot_lon_max]);
-        if (plot_equallat == 'n')
+        if (plot_equallat == 'n'),
             set(gca,'YLabel',text('String','Latitude','FontSize',15),'YTick',[plot_lat_min plot_lat_max], 'YTickLabel',{num2str(180*asin(plot_lat_min)/pi);num2str(180*asin(plot_lat_max)/pi)});
         else
             set(gca,'YLabel',text('String','Latitude','FontSize',15),'YTick',[plot_lat_min plot_lat_max], 'YTickLabel',{num2str(plot_lat_min);num2str(plot_lat_max)});
@@ -1278,16 +1363,15 @@ if (plot_main == 'y')
     if ~isempty(plot_title)
         title(plot_title,'FontSize',18);
     else
-        if ~isempty(plot_dataid_alt1)
+        if ~isempty(plot_dataid_alt1),
             title(['[replaced data: ' plot_dataid_alt1 ']'],'FontSize',12);
         else
-            title([str_long_name, ' (', str_units, ') ', '@ year: ',strrep(num2str(time),'_',' ')],'FontSize',12);            
-%             title(['Year: ',strrep(num2str(time),'_',' '),' / ','Data ID: ',strrep(dataid_1,'_',' ')],'FontSize',12);
+            title(['Year: ',strrep(num2str(time),'_',' '),' / ','Data ID: ',strrep(dataid_1,'_',' ')],'FontSize',12);
         end
     end
     % draw filled rectangles
-    for i = 1:imax
-        for j = 1:jmax
+    for i = 1:imax,
+        for j = 1:jmax,
             if (topo(j,i) > layb(j,i))
                 h = patch([lonw(j,i) lonw(j,i) lone(j,i) lone(j,i)],[lats(j,i) latn(j,i) latn(j,i) lats(j,i)],color_g);
                 set(h,'EdgeColor',color_g);
@@ -1309,8 +1393,8 @@ if (plot_main == 'y')
     % *** OVERLAY CONTOURS ********************************************** %
     %
     % plot contours
-    if (contour_plot == 'y') && (data_only == 'n')
-        if ((con_min < 0.0) && (con_max > 0.0))
+    if (contour_plot == 'y') && (data_only == 'n'),
+        if ((con_min < 0.0) && (con_max > 0.0)),
             v = [con_min:(con_max-con_min)/(con_n/contour_mod):0.0];
             if (contour_dashneg == 'n')
                 [C,h] = contour(xm_ex,sin(pi*ym_ex/180.0),zm_ex,v,'k-'); 
@@ -1333,7 +1417,7 @@ if (plot_main == 'y')
             [C,h] = contour(xm_ex,sin(pi*ym_ex/180.0),zm_ex,v,'k-');
             set(h,'LineWidth',0.50);
             if contour_label == 'y', clabel(C,h); end
-        elseif (con_min < 0.0)
+        elseif (con_min < 0.0),
             v = [con_min:(con_max-con_min)/(con_n/contour_mod):con_max];
             if (contour_dashneg == 'n')
                 [C,h] = contour(xm_ex,sin(pi*ym_ex/180.0),zm_ex,v,'k-.');
@@ -1360,13 +1444,13 @@ if (plot_main == 'y')
         end
         % additional highlight contours
         loc_lim = 2.0*(abs(con_min) + abs(con_max));
-        if (contour_hlt == 'y')
+        if (contour_hlt == 'y'),
             v = [-loc_lim+contour_hltval:loc_lim:loc_lim+contour_hltval];
             [C,h] = contour(xm_ex,sin(pi*ym_ex/180.0),zm_ex,v,'w-');
             set(h,'LineWidth',1.0);
             if contour_label == 'y', clabel(C,h); end
         end
-        if (contour_hlt2 == 'y')
+        if (contour_hlt2 == 'y'),
             v = [-loc_lim+contour_hltval2:loc_lim:loc_lim+contour_hltval2];
             [C,h] = contour(xm_ex,sin(pi*ym_ex/180.0),zm_ex,v,'w--');
             set(h,'LineWidth',1.0);
@@ -1374,23 +1458,95 @@ if (plot_main == 'y')
         end
     end
     %
-    % *** OVERLAY DATA ************************************************** %
+    % *** OVERLAY PSI FIELD ********************************************* %
     %
-    if ~isempty(overlaydataid)
-        % set uniform marker shape and color
-        if (data_shapecol == 'n')
-            for n = 1:nmax,
-                overlaydata_shape(n) = 'o';
-                overlaydata_ecol(n) = data_sitecolor;
-                if ( (data_only == 'y') && (data_siteonly == 'y') )
-                    overlaydata_fcol(n) = data_sitecolor;
-                else
-                    overlaydata_fcol(n) = '-';                    
+    % plot psi field if requested
+    if exist('plot_psi','var')
+        if (plot_psi == 'y'),
+            if (data_only == 'y')
+                %
+                con_min = plot_opsi_min;
+                con_max = plot_opsi_max;
+                con_n = (plot_opsi_max - plot_opsi_min)/plot_opsi_dminor;
+                % re-define colormap
+                cmap = make_cmap('anom',con_n+2);
+                if (colorbar_inv == 'y'), cmap = flipdim(cmap,1); end,
+                colormap(cmap);
+                caxis([con_min-(con_max-con_min)/con_n con_max]);
+                % colors!
+                v = [plot_opsi_min:plot_opsi_dminor:plot_opsi_max];
+                [C,h] = contourf(xpsi_ex,sin(pi*ypsi_ex/180.0),zpsi_ex,v,'k:');
+                set(h,'LineColor','none')
+                % contours
+                v = [plot_opsi_min:plot_opsi_dminor:0.0];
+                [C,h] = contour(xpsi_ex,sin(pi*ypsi_ex/180.0),zpsi_ex,v,'k-.');
+                set(h,'LineWidth',0.25);
+                v = [plot_opsi_min:plot_opsi_dmajor:0.0];
+                [C,h] = contour(xpsi_ex,sin(pi*ypsi_ex/180.0),zpsi_ex,v,'k-.');
+                set(h,'LineWidth',0.50);
+                if contour_label == 'y', clabel(C,h); end
+                v = [plot_opsi_max:-plot_opsi_dminor:0.0];
+                [C,h] = contour(xpsi_ex,sin(pi*ypsi_ex/180.0),zpsi_ex,v,'k-');
+                set(h,'LineWidth',0.25);
+                v = [plot_opsi_max:-plot_opsi_dmajor:0.0];
+                [C,h] = contour(xpsi_ex,sin(pi*ypsi_ex/180.0),zpsi_ex,v,'k-');
+                set(h,'LineWidth',0.50);
+                if contour_label == 'y', clabel(C,h); end
+            else
+                %
+                v = [plot_opsi_min:plot_opsi_dminor:0.0];
+                [C,h] = contour(xpsi_ex,sin(pi*ypsi_ex/180.0),zpsi_ex,v,'k-.');
+                set(h,'LineWidth',0.25);
+                v = [plot_opsi_min:plot_opsi_dmajor:0.0];
+                [C,h] = contour(xpsi_ex,sin(pi*ypsi_ex/180.0),zpsi_ex,v,'k-.');
+                set(h,'LineWidth',0.50);
+                if contour_label == 'y', clabel(C,h); end
+                v = [plot_opsi_max:-plot_opsi_dminor:0.0];
+                [C,h] = contour(xpsi_ex,sin(pi*ypsi_ex/180.0),zpsi_ex,v,'k-');
+                set(h,'LineWidth',0.25);
+                v = [plot_opsi_max:-plot_opsi_dmajor:0.0];
+                [C,h] = contour(xpsi_ex,sin(pi*ypsi_ex/180.0),zpsi_ex,v,'k-');
+                set(h,'LineWidth',0.50);
+                if contour_label == 'y', clabel(C,h); end
+            end
+            % add zero contour
+            if contour_zero == 'y',
+                v = [-1.0e19:1.0e19:1.0E19];
+                [C,h] = contour(xpsi_ex,sin(pi*ypsi_ex/180.0),zpsi_ex,v,'k-');
+                set(h,'LineWidth',1.0);
+                if contour_label == 'y', clabel(C,h); end
+            end
+        end
+        % draw land
+        for i = 1:imax,
+            for j = 1:jmax,
+                if ((topo(j,i) > layb(j,i)) && (plot_landvalues == 'n'))
+                    h = patch([lonw(j,i) lonw(j,i) lone(j,i) lone(j,i)],[lats(j,i) latn(j,i) latn(j,i) lats(j,i)],color_g);
+                    set(h,'EdgeColor',color_g);
                 end
             end
         end
+    end
+    %
+    % *** OVERLAY WIND STRESS FIELD ************************************* %
+    %
+    % NOTE: here the field is wind stress NOT ocean current velocity
+    if (data_uv == 'y'),
+        if (plot_equallat == 'n'),
+            [h] = scatter(reshape(xm(:,:),jmax*imax,1),sin(pi*reshape(ym(:,:),jmax*imax,1)/180.0),2.5,'filled','k');
+            [h] = quiver(xm,sin(pi*ym/180.0),z_u,sin(pi*z_v/180.0),data_uv_scale,'k','MaxHeadSize',0.0);
+        else
+            [h] = scatter(reshape(xm(:,:),jmax*imax,1),reshape(ym(:,:),jmax*imax,1),2.5,'filled','k');
+            [h] = quiver(xm,ym,z_u,z_v,data_uv_scale,'k','MaxHeadSize',0.0);
+        end
+        set(h,'LineWidth',0.75);
+    end
+    %
+    % *** OVERLAY DATA ************************************************** %
+    %
+    if ~isempty(overlaydataid)
         % plot overlay data
-        for n = 1:nmax
+        for n = 1:nmax,
             if (data_siteonly == 'n')
                 scatter(overlaydata(n,1),overlaydata(n,2),4,overlaydata(n,3)/data_scale,overlaydata_shape(n),'Filled','LineWidth',data_sitelineth,'Sizedata',data_size,'MarkerEdgeColor',overlaydata_ecol(n));
             else
@@ -1410,7 +1566,7 @@ if (plot_main == 'y')
     %
     % draw continental outline
     for j = 1:jmax,
-        for i = 1:imax-1
+        for i = 1:imax-1,
             if topo(j,i) > layb(j,i)
                 if topo(j,i+1) <= layb(j,i+1)
                     h = plot([lone(j,i) lone(j,i)],[lats(j,i) latn(j,i)],'k-');
@@ -1418,7 +1574,7 @@ if (plot_main == 'y')
                 end
             end
         end
-        for i = 2:imax
+        for i = 2:imax,
             if topo(j,i) > layb(j,i)
                 if topo(j,i-1) <= layb(j,i-1)
                     h = plot([lonw(j,i) lonw(j,i)],[lats(j,i) latn(j,i)],'k-');
@@ -1427,8 +1583,8 @@ if (plot_main == 'y')
             end
         end
     end
-    for i = 1:imax
-        for j = 1:jmax-1
+    for i = 1:imax,
+        for j = 1:jmax-1,
             if topo(j,i) > layb(j,i)
                 if topo(j+1,i) <= layb(j+1,i)
                     h = plot([lonw(j,i) lone(j,i)],[latn(j,i) latn(j,i)],'k-');
@@ -1436,7 +1592,7 @@ if (plot_main == 'y')
                 end
             end
         end
-        for j = 2:jmax
+        for j = 2:jmax,
             if topo(j,i) > layb(j,i)
                 if topo(j-1,i) <= layb(j-1,i)
                     h = plot([lonw(j,i) lone(j,i)],[lats(j,i) lats(j,i)],'k-');
@@ -1473,26 +1629,24 @@ if (plot_main == 'y')
         % (1) draw and label start triangle
         c = 1;
         h = fill([0.1 0.2 0.3],[c c-1.0 c],cmap(c,:));
-        if isempty(contour_file)
+        if isempty(contour_file),
             str = [num2str(con_min + (c-1)*(con_max-con_min)/con_n)];
         else
             str = num2str(contour_data(c));
         end
-        textsize = 2+round(80/con_n);
-        if textsize > 10, textsize = 10; end
+        textsize = 6+round(80/con_n);
+        if textsize > 12, textsize = 12; end
         text(0.40,c,str,'FontName','Arial','FontSize',textsize);
         set(h,'LineWidth',0.5);
         set(h,'EdgeColor','k');
         % (2) draw and label bars
-        for c = 2:con_n+1
+        for c = 2:con_n+1,
             h = fill([0.1 0.1 0.3 0.3],[c-1.0 c c c-1.0],cmap(c,:));
-            if isempty(contour_file)
+            if isempty(contour_file),
                 str = [num2str(con_min + (c-1)*(con_max-con_min)/con_n)];
             else
                 str = num2str(contour_data(c));
             end
-            textsize = 2+round(80/con_n);
-            if textsize > 10, textsize = 10; end
             text(0.40,c,str,'FontName','Arial','FontSize',textsize);
             set(h,'LineWidth',0.5);
             set(h,'EdgeColor','k');
@@ -1510,24 +1664,7 @@ if (plot_main == 'y')
     % *** PRINT PLOT **************************************************** %
     %
     set(gcf,'CurrentAxes',fh(1));
-    if (plot_format_old == 'y')
-        if (par_mutlab > 2015)
-            print('-dpsc2', '-bestfit', [par_pathout '/' filename '.' str_date '.ps']);
-        else
-            print('-dpsc2', [par_pathout '/' filename '.' str_date '.ps']);
-        end
-    else
-        switch plot_format
-            case 'png'
-                export_fig([par_pathout '/' filename '.' str_date '.png'], '-png', '-r150', '-nocrop');
-            case 'pngT'
-                export_fig([par_pathout '/' filename '.' str_date '.png'], '-png', '-r150', '-nocrop', '-transparent');
-            case 'jpg'
-                export_fig([par_pathout '/' filename '.' str_date '.jpg'], '-jpg', '-r150', '-nocrop');
-            otherwise
-                export_fig([par_pathout '/' filename '.' str_date '.eps'], '-eps', '-nocrop');
-        end
-    end
+    exportgraphics(gcf,[par_pathout '/' filename '.' str_date '.pdf'],'BackgroundColor','none','ContentType','vector');
     %
     % *********************************************************************** %
     %
@@ -1571,59 +1708,57 @@ if (plot_secondary == 'y')
     % *** PLOT FIGURE (surface zonal mean) ****************************** %
     %
     if ((data_only == 'n') && (plot_equallat == 'y'))
-        %
+        % basic figure
         figure
-        plot(grid_lat,zz(:));
+        h = plot(grid_lat,zz(:),'r');
+        set(h,'LineWidth',1.0);
         hold on;
-        scatter(grid_lat,zz(:),25,'r');
+        scatter(grid_lat,zz(:),20,'s','r','filled');
         axis([-90.0 90.0 con_min con_max ]);
         xlabel('Latitude');
-        ylabel([str_long_name, ' (', str_units, ')']);         
-%         ylabel(strrep(dataid_1,'_','-'));
-        if (plot_format_old == 'y')
-            print('-dpsc2', [par_pathout '/' filename '.ZONAL.' str_date '.ps']);
-        else
-            switch plot_format
-                case 'png'
-                    export_fig([par_pathout '/' filename '.ZONAL.' str_date '.png'], '-png', '-r150', '-nocrop');
-                case 'pngT'
-                    export_fig([par_pathout '/' filename '.ZONAL.' str_date '.png'], '-png', '-r150', '-nocrop', '-transparent');
-                case 'jpg'
-                    export_fig([par_pathout '/' filename '.ZONAL.' str_date '.jpg'], '-jpg', '-r150', '-nocrop');
-                otherwise
-                    export_fig([par_pathout '/' filename '.ZONAL.' str_date '.eps'], '-eps', '-nocrop');
+        ylabel(strrep(dataid_1,'_','-'));
+        % overlay data
+        if ~isempty(overlaydataid)
+            for n = 1:nmax
+                if (data_siteonly == 'n')
+                    scatter(overlaydata(n,2),overlaydata(n,3)/data_scale,4,overlaydata_shape(n),'LineWidth',data_sitelineth,'Sizedata',data_size,'MarkerEdgeColor','k');
+                end
+            end
+            if (data_sitelabel == 'y')
+                text(overlaydata(:,2)+(data_size/30),overlaydata(:,3)+(data_size/1200),overlaylabel(:,:),'FontSize',data_fontsz,'Color',data_sitecolor);
             end
         end
+        % print!
+        exportgraphics(gcf,[par_pathout '/' filename '.ZONAL.' str_date '.pdf'],'BackgroundColor','none','ContentType','vector');
         %
     end
     %
     % *** PLOT FIGURE (surface zonal mean) ALT ************************** %
     %
     if ((data_only == 'n') && (plot_equallat == 'n'))
-        %
+        % basic figure
         figure
-        plot(sin(pi*grid_lat/180.0),zz(:));
+        h = plot(sin(pi*grid_lat/180.0),zz(:),'r');
+        set(h,'LineWidth',1.0);
         hold on;
-        scatter(sin(pi*grid_lat/180.0),zz(:),25,'r');
+        scatter(sin(pi*grid_lat/180.0),zz(:),20,'s','r','filled');
         axis([-1.0 1.0 con_min con_max ]);
         set(gca,'XTick',[-1.0 -sin(pi*60.0/180.0) -sin(pi*30.0/180.0) 0.0 sin(pi*30.0/180.0) sin(pi*60.0/180.0) 1.0],'XTickLabel',[-90:30:90]);
         xlabel('Latitude');
-        ylabel(['Zonal mean ', str_long_name, ' (', str_units, ')']);  
-%         ylabel(strrep(dataid_1,'_','-'));
-        if (plot_format_old == 'y')
-            print('-dpsc2', [par_pathout '/' filename '.ZONALsinlat.' str_date '.ps']);
-        else
-            switch plot_format
-                case 'png'
-                    export_fig([par_pathout '/' filename '.ZONALsinlat.' str_date '.png'], '-png', '-r150', '-nocrop');
-                case 'pngT'
-                    export_fig([par_pathout '/' filename '.ZONALsinlat.' str_date '.png'], '-png', '-r150', '-nocrop', '-transparent');
-                case 'jpg'
-                    export_fig([par_pathout '/' filename '.ZONALsinlat.' str_date '.jpg'], '-jpg', '-r150', '-nocrop');
-                otherwise
-                    export_fig([par_pathout '/' filename '.ZONALsinlat.' str_date '.eps'], '-eps', '-nocrop');
+        ylabel(strrep(dataid_1,'_','-'));
+        % overlay data
+        if ~isempty(overlaydataid)
+            for n = 1:nmax
+                if (data_siteonly == 'n')
+                    scatter(overlaydata(n,2),overlaydata(n,3)/data_scale,4,overlaydata_shape(n),'LineWidth',data_sitelineth,'Sizedata',data_size,'MarkerEdgeColor','k');
+                end
+            end
+            if (data_sitelabel == 'y')
+                text(overlaydata(:,2)+(data_size/30),overlaydata(:,3)+(data_size/1200),overlaylabel(:,:),'FontSize',data_fontsz,'Color',data_sitecolor);
             end
         end
+        % print!
+        exportgraphics(gcf,[par_pathout '/' filename '.ZONALsinlat.' str_date '.pdf'],'BackgroundColor','none','ContentType','vector');
         %
     end
     %
@@ -1637,10 +1772,7 @@ if (plot_secondary == 'y')
     %
     % NOTE: data_vector_1 == DATA  (or model field 1)
     % NOTE: data_vector_2 == MODEL (or model field 2)
-    %       => swap data2 and data1 so model (data1) is on y-axis
-    %          as per for overlay data
-    %          (assuming data2 are regridded observations)
-    if ( ~isempty(dataid_2) || ~isempty(overlaydataid) )
+    if ((data_save == 'y') && (~isempty(dataid_2) || (~isempty(overlaydataid) && (data_only == 'n'))) )
         %
         if ~isempty(dataid_2)
             loc_x_data = reshape(data_2(:,:),1,[]);
@@ -1653,10 +1785,15 @@ if (plot_secondary == 'y')
             loc_x_label = [strrep(overlaydataid,'_','-')];
             loc_y_label = [strrep(dataid_1,'_','-')];
         end
-        % plot without depth coding
+        % plot without color (e.g. depth) coding
         % NOTE: test for insufficient data for scaling the plot
-        if (range(loc_x_data) > 0.0)
-            plot_crossplotc(loc_x_data,loc_y_data,[],loc_x_label,loc_y_label,'',POPT,[par_pathout '/' filename '.CROSSPLOT']);
+        % NOTE: function range has been moved ...
+        if ((max(loc_x_data)-min(loc_x_data)) > 0.0)
+            if ~isempty(dataid_2)
+                plot_crossplotc2(loc_x_data,loc_y_data,[],loc_x_label,loc_y_label,'',POPT,[par_pathout '/' filename '.CROSSPLOT'],[min(loc_x_data) max(loc_x_data) min(loc_y_data) max(loc_y_data)]);
+            elseif ~isempty(overlaydataid)
+                plot_crossplotc2(loc_x_data,loc_y_data,[],loc_x_label,loc_y_label,'',POPT,[par_pathout '/' filename '.CROSSPLOT'],[con_min con_max con_min con_max]);
+            end
         end
         %
     end
@@ -1665,6 +1802,27 @@ if (plot_secondary == 'y')
     %
     if ((data_save == 'y') && (~isempty(dataid_2) || (~isempty(overlaydataid) && (data_only == 'n'))) )
        fprint_1Dn_d([loc_x_data' loc_y_data'],[par_pathout '/' filename '.CROSSPLOT.', str_date, '.res']); 
+    end
+    %
+    %
+    % *** PLOT FIGURE (cross-plot) ALT ********************************** %
+    %
+    % now color-code z-axis with data values (data_vector_1)
+    if ( ~isempty(overlaydataid) && (data_only == 'n') )
+            loc_x_data = data_vector_1;
+            loc_y_data = data_vector_2;
+            loc_x_label = [strrep(overlaydataid,'_','-')];
+            loc_y_label = [strrep(dataid_1,'_','-')];
+        if ((max(loc_x_data)-min(loc_x_data)) > 0.0)
+            plot_crossplotc2(loc_x_data,loc_y_data,loc_x_data,loc_x_label,loc_y_label,loc_x_label,POPT,[par_pathout '/' filename '.CROSSPLOT_ALT'],[con_min con_max con_min con_max con_min con_max]);
+        end
+        %
+    end
+    %
+    % *** SAVE DATA (cross-plot relationships) ************************** %
+    %
+    if ( ~isempty(overlaydataid) && (data_only == 'n') )
+       fprint_1Dn_d([loc_x_data' loc_y_data'],[par_pathout '/' filename '.CROSSPLOT_ALT.', str_date, '.res']); 
     end
     %
 end
@@ -1706,15 +1864,45 @@ if (data_output_old == 'y')
     end
 else
     % basic stats
-    % NOTE: use data_vector_1 which is the full grid data
-    % NOTE: remove NaNs first
-    data_vector_1(find(isnan(data_vector_1))) = [];
-    output = datastats(reshape(data_vector_1,[],1));
-    % add sum
-    output.sum  = sum(data_vector_1);
-    % add old min,max
-    output.data_min   = min(min(zm));
-    output.data_max   = max(max(zm));
+    % NOTE: use data_vector_1 which is the full grid values
+    %       when there is no data
+    % NOTE: remove NaNs first (also from depth vector)
+    output = [];
+    if (license('test','Curve Fitting Toolbox'))
+        if (~isempty(overlaydataid) && ((data_only == 'n') || (data_anomoly == 'y')))
+            % basic data stats and those of corresponding model locations
+            data_vector_1(find(isnan(data_vector_1))) = [];
+            output.data = datastats(reshape(data_vector_1,[],1));
+            output.data.sum  = sum(data_vector_1); % add sum
+            data_vector_2(find(isnan(data_vector_2))) = [];
+            output.model = datastats(reshape(data_vector_2,[],1));
+            output.model.sum  = sum(data_vector_2); % add sum
+        else
+            % basic stats
+            data_vector_1(find(isnan(data_vector_1))) = [];
+            output.model = datastats(reshape(data_vector_1,[],1));
+            output.model.sum  = sum(data_vector_1); % add sum
+            % add old min,max
+            output.old.max   = max(max(zm));
+            output.old.min   = min(min(zm));
+        end
+    else
+        if (~isempty(overlaydataid) && ((data_only == 'n') || (data_anomoly == 'y')))
+            % basic data stats and those of corresponding model locations
+            data_vector_1(find(isnan(data_vector_1))) = [];
+            output.data.n    = length(data_vector_1);
+            output.data.sum  = sum(data_vector_1);
+            output.data.mean = mean(data_vector_1);
+            output.data.min  = min(data_vector_1);
+            output.data.max  = max(data_vector_1);
+            data_vector_2(find(isnan(data_vector_2))) = [];
+            output.model.n    = length(data_vector_2);
+            output.model.sum  = sum(data_vector_2);
+            output.model.mean = mean(data_vector_2);
+            output.model.min  = min(data_vector_2);
+            output.model.max  = max(data_vector_2);
+        end
+    end
     % add model-data/model stats
     if exist('STATM')
         output.statm          = STATM;
