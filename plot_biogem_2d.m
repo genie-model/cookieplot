@@ -1049,6 +1049,22 @@ if ~isempty(overlaydataid)
         disp([' ']);
         overlaydataid = [];
     end
+    % save data locations as 2D mask file
+    % NOTE: remember (j,i)
+    % (1) first create mask based on zm -- adopt size, transfer NaNs (land)
+    mask = zeros(size(zm));
+    mask(find(isnan(zm))) = NaN;
+    % (2) add data locations
+    for n = 1:nmax
+        mask(overlaydata_ij(n,2),overlaydata_ij(n,1)) = 1.0;
+    end
+    % (3) save file!
+    str_mask = [overlaydataid '.MASK.dat'];
+    fprint_MASK(mask(:,:),str_mask,false);
+    if (plot_secondary == 'y')
+        loc_s.filename = [maskid '.MASK'];;
+        plot_2dgridded2(mask,[0 1],'',loc_s);
+    end
 end
 %
 % *********************************************************************** %
@@ -1256,7 +1272,7 @@ end
 % *********************************************************************** %
 
 % *********************************************************************** %
-% *** ANOMOLY PLOTTING DATA ADJUSTMENTS ********************************* %
+% *** DATA PLOTTING DATA ADJUSTMENTS ************************************ %
 % *********************************************************************** %
 %
 if (~isempty(overlaydataid) && isempty(dataid_2))
