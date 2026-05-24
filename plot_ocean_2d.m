@@ -1,12 +1,12 @@
-function [OUTPUT] = plot_biogem_2d(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PMASK,PCSCALE,PCMIN,PCMAX,PCN,PDATA,POPT,PNAME)
-% plot_biogem_fields_2d
+function [OUTPUT] = plot_ocean_2d(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PMASK,PCSCALE,PCMIN,PCMAX,PCN,PDATA,POPT,PNAME)
+% plot_fields_ocean_2d
 %
 %   *******************************************************************   %
 %   *** biogem 2-D (LON-LAT) DATA PLOTTING ****************************   %
 %   *******************************************************************   %
 %
-%   plot_biogem_fields_2d(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PMASK,PCSCALE,PCMIN,PCMAX,PCN,PDATA,POPT,PNAME)
-%   plots the BIOGEM 2-D netCDF data file 'biogem_fields_2d.nc' and takes 15 arguments:
+%   plot_ocean_2d(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PMASK,PCSCALE,PCMIN,PCMAX,PCN,PDATA,POPT,PNAME)
+%   plots the BIOGEM 2-D netCDF data file 'fields_ocean_2d.nc' and takes 15 arguments:
 %
 %   PEXP1 [STRING] (e.g. 'preindustrial_spinup')
 %   --> the (first) experiment name
@@ -61,7 +61,7 @@ function [OUTPUT] = plot_biogem_2d(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PMASK,PCS
 %       then a filename is automatically generated
 %
 %   Example
-%           plot_biogem_fields_2d('experiment_1','','ocn_sur_PO4','',1994.5,-1,14,'',1e-6,0.0,2.0,20,'','','')
+%           plot_fields_ocean_2d('experiment_1','','ocn_sur_PO4','',1994.5,-1,14,'',1e-6,0.0,2.0,20,'','','')
 %           will plot the time-slice cenetered on a time of 1994.5,
 %           of bottom-water [PO4] in units of umol kg-1,
 %           between 0 and 2 umol kg-1 with 20 contour intervals
@@ -245,8 +245,6 @@ if ~(exist([str_current_path '/' par_pathdata],'dir') == 7),
     mkdir([str_current_path '/' par_pathdata]); 
 end
 addpath([str_current_path '/' par_pathdata]);
-% check plot format setting
-if ~isempty(plot_format), plot_format_old='n'; end
 % now make make str_function text-friendly
 str_function = strrep(str_function,'_','-');
 %
@@ -310,7 +308,7 @@ else
     else
         loc_flag_unpack = false;
     end
-    ncid_1=netcdf.open([par_pathin '/' exp_1 '/results/biogem_fields_2d.nc'],'nowrite');
+    ncid_1=netcdf.open([par_pathin '/' exp_1 '/results/fields_ocean_2d.nc'],'nowrite');
 end
 % read netCDf information
 [ndims,nvars,ngatts,unlimdimid] = netcdf.inq(ncid_1);
@@ -322,7 +320,7 @@ end
 % *********************************************************************** %
 %
 % load grid data
-varid  = netcdf.inqVarID(ncid_1,'grid_level');
+varid  = netcdf.inqVarID(ncid_1,'2Dgrid_level');
 grid_k1(:,:) = netcdf.getVar(ncid_1,varid);
 % flip array around diagonal to give (j,i) array orientation
 grid_k1 = grid_k1';
@@ -477,7 +475,7 @@ if ~isempty(exp_2)
     if strcmp(exp_2(end-2:end),'.nc'),
         ncid_2=netcdf.open(exp_2,'nowrite');
     else
-        ncid_2=netcdf.open([par_pathin '/' exp_2 '/results/biogem_fields_2d.nc'],'nowrite');
+        ncid_2=netcdf.open([par_pathin '/' exp_2 '/results/fields_ocean_2d.nc'],'nowrite');
     end
     % read netCDf information
     [ndims,nvars,ngatts,unlimdimid] = netcdf.inq(ncid_2);
@@ -936,7 +934,7 @@ if ~isempty(overlaydataid)
         loc_sin.lone = grid_lon_edges;
         loc_sin.late = grid_lat_edges;
         loc_sin.vdsrch = [1 1; 1 0; 1 -1; 0 -1; -1 -1; -1 0; -1 1; 0 1];
-        % process each data points
+        % process each data point
         for n = 1:nmax
             loc_sin.lon = overlaydata_raw(n,1);
             loc_sin.lat = overlaydata_raw(n,2);
@@ -949,7 +947,12 @@ if ~isempty(overlaydataid)
             else
                 loc_n = length(loc_sin.vdsrch);
             end
-            %
+            % if data_ijk_near == 'n', 
+            % loc_n is already length(loc_sin.vdsrch) and so
+            % the while loop immediately exits with no alteration made
+            % if data_ijk_near == 'n',
+            % overlaydata_ij(n,1:2) will be set non NaN 
+            % and the loop will only go through a single iteration
             while (isnan(zm(overlaydata_ij(n,2),overlaydata_ij(n,1))))
                 loc_n = loc_n + 1;
                 if (loc_n > length(loc_sin.vdsrch)), break; end
@@ -1104,7 +1107,7 @@ if ~isempty(dataid_2)
         if (plot_secondary=='y')
             % plot Taylor diagram
             taylordiag_vargout = plot_taylordiag(STATM(2,1:2),STATM(3,1:2),STATM(4,1:2));
-            print('-depsc2', [par_pathout '/' filename, '_TaylorDiagram.', str_date, '.eps']);
+            exportgraphics(gcf,[par_pathout '/' filename '.TaylorDiagram.' str_date '.pdf'],'BackgroundColor','none','ContentType','vector');
             %%%% plot Target diagram
             %%%targetdiag_vargout = plot_target(STATM(7,1:2),STATM(8,1:2),'r',1.0,[],[]);
             %%%print('-depsc2', [filename, '_TargetDiagram.', str_date, '.eps']);
@@ -1955,6 +1958,11 @@ else
             output.model.mean = mean(data_vector_2);
             output.model.min  = min(data_vector_2);
             output.model.max  = max(data_vector_2);
+        else
+            output.model.n    = sum(~isnan(reshape(zm,[],1)));
+            output.model.mean = mean(reshape(zm,[],1),1,'omitnan');
+            output.model.min  = min(reshape(zm,[],1),1,'omitnan');
+            output.model.max  = max(reshape(zm,[],1),1,'omitnan');
         end
     end
     % add model-data/model stats
