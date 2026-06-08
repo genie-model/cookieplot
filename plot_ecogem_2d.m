@@ -319,7 +319,7 @@ end
 % *********************************************************************** %
 %
 % load grid data
-varid  = netcdf.inqVarID(ncid_1,'grid_level');
+varid  = netcdf.inqVarID(ncid_1,'2Dgrid_level');
 grid_k1(:,:) = netcdf.getVar(ncid_1,varid);
 % flip array around diagonal to give (j,i) array orientation
 grid_k1 = grid_k1';

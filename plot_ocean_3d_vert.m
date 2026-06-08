@@ -1,13 +1,13 @@
-function [OUTPUT] = plot_biogem_3d_i(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PMASK,PCSCALE,PCMIN,PCMAX,PCN,PDATA,POPT,PNAME)
-% plot_biogem_fields_3d_i
+function [OUTPUT] = plot_ocean_3d_vert(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PMASK,PCSCALE,PCMIN,PCMAX,PCN,PDATA,POPT,PNAME)
+% plot_fields_ocean_3d_i
 %
 %   *******************************************************************   %
 %   *** biogem i-SECTION (LAT-LAY) + INTEGRATED PLOTTING  *************   %
 %   *******************************************************************   %
 %
-%   plot_biogem_3d_i(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PMASK,PCSCALE,PCMIN,PCMAX,PCN,PDATA,POPT,PNAME)
+%   plot_ocean_3d_vert(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PMASK,PCSCALE,PCMIN,PCMAX,PCN,PDATA,POPT,PNAME)
 %   plots slices and zonally averaged vertical sections from the BIOGEM 3-D
-%   netCDF data file 'biogem_fields_3d.nc' and takes 15 arguments:
+%   netCDF data file 'fields_ocean_3d.nc' and takes 15 arguments:
 %
 %   PEXP1 [STRING] (e.g. 'preindustrial_spinup')
 %   --> the (first) experiment name
@@ -268,8 +268,6 @@ if ~(exist([str_current_path '/' par_pathdata],'dir') == 7),
     mkdir([str_current_path '/' par_pathdata]); 
 end
 addpath([str_current_path '/' par_pathdata]);
-% check plot format setting
-if ~isempty(plot_format), plot_format_old='n'; end
 % now make make str_function text-friendly
 str_function = strrep(str_function,'_','-');
 %
@@ -334,7 +332,7 @@ else
     else
         loc_flag_unpack = false;
     end
-    ncid_1=netcdf.open([par_pathin '/' exp_1 '/results/biogem_fields_3d.nc'],'nowrite');
+    ncid_1=netcdf.open([par_pathin '/' exp_1 '/results/fields_ocean_3d.nc'],'nowrite');
 end
 % read netCDf information
 [~,nvars,~,~] = netcdf.inq(ncid_1); % [ndims,nvars,ngatts,unlimdimid]
@@ -346,7 +344,7 @@ end
 % *********************************************************************** %
 %
 % load grid data
-varid  = netcdf.inqVarID(ncid_1,'grid_level');
+varid  = netcdf.inqVarID(ncid_1,'2Dgrid_level');
 grid_k1 = netcdf.getVar(ncid_1,varid);
 % flip array around diagonal to give (j,i) array orientation
 grid_k1 = grid_k1';
@@ -556,7 +554,7 @@ if ~isempty(exp_2)
     if strcmp(exp_2(end-2:end),'.nc'),
         ncid_2=netcdf.open(exp_2,'nowrite');
     else
-        ncid_2=netcdf.open([par_pathin '/' exp_2 '/results/biogem_fields_3d.nc'],'nowrite');
+        ncid_2=netcdf.open([par_pathin '/' exp_2 '/results/fields_ocean_3d.nc'],'nowrite');
     end
     % read netCDf information
     [ndims,nvars,ngatts,unlimdimid] = netcdf.inq(ncid_2);
@@ -1252,7 +1250,7 @@ if (~isempty(dataid_2))
         if (plot_secondary=='y')
             % plot Taylor diagram
             taylordiag_vargout = plot_taylordiag(STATM(2,1:2),STATM(3,1:2),STATM(4,1:2));
-            print('-depsc2', [par_pathout '/' filename, '_TaylorDiagram.', str_date, '.eps']);
+            exportgraphics(gcf,[par_pathout '/' filename '.TaylorDiagram.' str_date '.pdf'],'BackgroundColor','none','ContentType','vector');
             %%%% plot Target diagram
             %%%targetdiag_vargout = plot_target(STATM(7,1:2),STATM(8,1:2),'r',1.0,[],[]);
             %%%print('-depsc2', [filename, '_TargetDiagram.', str_date, '.eps']);
@@ -1800,11 +1798,7 @@ if (plot_main == 'y'),
     % *** PRINT PLOT **************************************************** %
     %
     set(gcf,'CurrentAxes',fh(1));
-    if (plot_format_old == 'y')
-        print('-dpsc2', '-bestfit', [par_pathout '/' filename '.' str_date '.ps']);
-    else
-        exportgraphics(gcf,[par_pathout '/' filename '.' str_date '.pdf'],'BackgroundColor','none','ContentType','vector');
-    end
+    exportgraphics(gcf,[par_pathout '/' filename '.' str_date '.pdf'],'BackgroundColor','none','ContentType','vector');
     %
     % *** SAVE DATA ***************************************************** %
     %
@@ -1907,11 +1901,7 @@ if (plot_secondary == 'y')
                 title(['Data ID: ',strrep(dataid_1,'_','-'),' / i = ', num2str(iplot)],'FontSize',12);
             end
         end
-        if (plot_format_old == 'y')
-            print('-dpsc2', [par_pathout '/' filename '.PROFILE.' str_date '.ps']);
-        else
         exportgraphics(gcf,[par_pathout '/' filename '.PROFILE.' str_date '.pdf'],'BackgroundColor','none','ContentType','vector');
-        end
         %
     end
     %
@@ -1945,11 +1935,7 @@ if (plot_secondary == 'y')
         axis([-90.0 90.0 con_min con_max ]);
         xlabel('Latitude');
         ylabel(strrep(dataid_1,'_','-'));
-        if (plot_format_old == 'y')
-            print('-dpsc2', [par_pathout '/' filename '.ZONAL.' str_date '.ps']);
-        else
         exportgraphics(gcf,[par_pathout '/' filename '.ZONAL.' str_date '.pdf'],'BackgroundColor','none','ContentType','vector');
-        end
         %
     end
     %
@@ -2110,6 +2096,11 @@ else
             output.model.mean = mean(data_vector_2);
             output.model.min  = min(data_vector_2);
             output.model.max  = max(data_vector_2);
+        else
+            output.model.n    = sum(~isnan(reshape(zm,[],1)));
+            output.model.mean = mean(reshape(zm,[],1),1,'omitnan');
+            output.model.min  = min(reshape(zm,[],1),1,'omitnan');
+            output.model.max  = max(reshape(zm,[],1),1,'omitnan');
         end
     end
     % add profile stats (if selected)

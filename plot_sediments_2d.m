@@ -1,11 +1,11 @@
-function [OUTPUT] = plot_sedgem_2d(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PMASK,PCSCALE,PCMIN,PCMAX,PCN,PDATA,POPT,PNAME)
+function [OUTPUT] = plot_sediments_2d(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PMASK,PCSCALE,PCMIN,PCMAX,PCN,PDATA,POPT,PNAME)
 % plot_sedgem_2d
 %
 %   *******************************************************************   %
 %   *** sedgem 2-D (LON-LAT) DATA PLOTTING ****************************   %
 %   *******************************************************************   %
 %
-%   plot_sedgem_2d(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PMASK,PCSCALE,PCMIN,PCMAX,PCN,PDATA,POPT,PNAME)
+%   plot_sediments_2d(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PMASK,PCSCALE,PCMIN,PCMAX,PCN,PDATA,POPT,PNAME)
 %   plots the SEDGEM 2-D netCDF data file 'fields_sdegem_2d.nc' and takes 15 arguments:
 %
 %   PEXP1 [STRING] (e.g. 'preindustrial_spinup')
@@ -241,8 +241,6 @@ if ~(exist([str_current_path '/' par_pathdata],'dir') == 7),
     mkdir([str_current_path '/' par_pathdata]); 
 end
 addpath([str_current_path '/' par_pathdata]);
-% check plot format setting
-if ~isempty(plot_format), plot_format_old='n'; end
 % now make make str_function text-friendly
 str_function = strrep(str_function,'_','-');
 %
@@ -864,11 +862,7 @@ if ~isempty(dataid_2)
         if (plot_secondary=='y')
             % plot Taylor diagram
             taylordiag_vargout = plot_taylordiag(STATM(2,1:2),STATM(3,1:2),STATM(4,1:2));
-            if (plot_format_old == 'y')
-                print('-depsc2', [par_pathout '/' filename, '_TaylorDiagram.', str_date, '.eps']);
-            else
-                exportgraphics(gcf,[par_pathout '/' filename '.TaylorDiagram.', str_date '.pdf'],'BackgroundColor','none','ContentType','vector');
-            end
+            exportgraphics(gcf,[par_pathout '/' filename '.TaylorDiagram.', str_date '.pdf'],'BackgroundColor','none','ContentType','vector');
             %%%% plot Target diagram
             %%%targetdiag_vargout = plot_target(STATM(7,1:2),STATM(8,1:2),'r',1.0,[],[]);
             %%%print('-depsc2', [filename, '_TargetDiagram.', str_date, '.eps']);
@@ -899,8 +893,11 @@ if (~isempty(overlaydataid) && ((data_only == 'n') || (data_anomoly == 'y')))
     % the overlay data locations
     % NOTE: !!! data is (j,i) !!! (=> swap i and j)
     % NOTE: re-orientate data_vector_2 to match data_vector_1
+    % NOTE: data array has not been scaled (only zm was)
+    %       (data is scaled and then zm set in biogem plotting)
+    %       ... try zm instead of data
     for n = 1:nmax
-        data_vector_2(n) = data(overlaydata_ij(n,2),overlaydata_ij(n,1));
+        data_vector_2(n) = zm(overlaydata_ij(n,2),overlaydata_ij(n,1));
     end
     data_vector_2 = data_vector_2';
     % filter data
@@ -914,11 +911,7 @@ if (~isempty(overlaydataid) && ((data_only == 'n') || (data_anomoly == 'y')))
             % NOTE: only if there is a non-zero data SD
             if (STATM(2,2) > 0.0)
                 taylordiag_vargout = plot_taylordiag(STATM(2,1:2),STATM(3,1:2),STATM(4,1:2));
-                if (plot_format_old == 'y')
-                    print('-depsc2', [par_pathout '/' filename, '_TaylorDiagram.', str_date, '.eps']);
-                else
-                    exportgraphics(gcf,[par_pathout '/' filename '.TaylorDiagram.', str_date '.pdf'],'BackgroundColor','none','ContentType','vector');
-                end
+                exportgraphics(gcf,[par_pathout '/' filename '.TaylorDiagram.', str_date '.pdf'],'BackgroundColor','none','ContentType','vector');
             end
             %%%% plot Target diagram
             %%%targetdiag_vargout = plot_target(STATM(7,1:2),STATM(8,1:2),'r',1.0,[],[]);
@@ -1229,7 +1222,7 @@ if (plot_main == 'y')
         end
         % plot overlay data
         if (data_siteonly == 'n')
-            scatter(overlaydata(:,1),overlaydata(:,2),4,overlaydata(:,3)/data_scale,overlaydata_shape(n),'Filled','LineWidth',data_sitelineth,'Sizedata',data_size,'MarkerEdgeColor',overlaydata_ecol(n));
+            scatter(overlaydata(:,1),overlaydata(:,2),4,overlaydata(:,3)/datapoint_scale,overlaydata_shape(n),'Filled','LineWidth',data_sitelineth,'Sizedata',data_size,'MarkerEdgeColor',overlaydata_ecol(n));
         else
             if (overlaydata_fcol(n) == '-'),
                 scatter(overlaydata(:,1),overlaydata(:,2),4,overlaydata_shape(n),'LineWidth',data_sitelineth,'Sizedata',data_size,'MarkerEdgeColor',overlaydata_ecol(n));
@@ -1306,11 +1299,7 @@ if (plot_main == 'y')
     % *** PRINT PLOT ******************************************************** %
     %
     set(gcf,'CurrentAxes',fh(1));
-    if (plot_format_old == 'y')
-        print('-dpsc2', '-bestfit', [par_pathout '/' filename '.' str_date '.ps']);
-    else
-        exportgraphics(gcf,[par_pathout '/' filename '.' str_date '.pdf'],'BackgroundColor','none','ContentType','vector');
-    end
+    exportgraphics(gcf,[par_pathout '/' filename '.' str_date '.pdf'],'BackgroundColor','none','ContentType','vector');
     %
     % *********************************************************************** %
     %

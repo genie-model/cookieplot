@@ -1,14 +1,14 @@
-function [OUTPUT] = plot_biogem_3d_k(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PMASK,PCSCALE,PCMIN,PCMAX,PCN,PDATA,POPT,PNAME)
-% plot_biogem_fields_3d_k
+function [OUTPUT] = plot_ocean_3d_horz(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PMASK,PCSCALE,PCMIN,PCMAX,PCN,PDATA,POPT,PNAME)
+% plot_fields_ocean_3d_k
 %
 %   *******************************************************************   %
 %   *** biogem k-SECTION (LON-LAT) DIFFERENCE PLOTTING ****************   %
 %   *******************************************************************   %
 %
-%   plot_biogem_3d_k(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PMASK,PCSCALE,PCMIN,PCMAX,PCN,PDATA,POPT,PNAME)
+%   plot_ocean_3d_horz(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PMASK,PCSCALE,PCMIN,PCMAX,PCN,PDATA,POPT,PNAME)
 %   plots a k-section through the BIOGEM 3-D netCDF data file (with
 %   differencing/anomoly and water column integral options)
-%   'biogem_fields_3d.nc' and takes 15 arguments:
+%   'fields_ocean_3d.nc' and takes 15 arguments:
 %
 %   PEXP1 [STRING] (e.g. 'preindustrial_spinup')
 %   --> the (first) experiment name
@@ -134,6 +134,7 @@ if ~exist('par_pathexam','var'), par_pathexam = 'EXAMPLES'; end
 % plotting panel options
 if ~exist('plot_profile','var'), plot_profile = 'y'; end % PLOT PROFILE
 if ~exist('plot_zonal','var'),   plot_zonal   = 'y'; end % PLOT ZONAL
+if ~exist('plot_hist','var'),    plot_hist    = 'n'; end % PLOT HISTOGRAM
 if ~exist('plot_histc_SETTINGS','var'), plot_histc_SETTINGS = 'plot_histc_SETTINGS'; end % histc plotting settings
 %
 % *** initialize parameters ********************************************* %
@@ -248,8 +249,6 @@ if ~(exist([str_current_path '/' par_pathdata],'dir') == 7),
     mkdir([str_current_path '/' par_pathdata]); 
 end
 addpath([str_current_path '/' par_pathdata]);
-% check plot format setting
-if ~isempty(plot_format), plot_format_old='n'; end
 % now make make str_function text-friendly
 str_function = strrep(str_function,'_','-');
 %
@@ -316,7 +315,7 @@ else
     else
         loc_flag_unpack = false;
     end
-    ncid_1=netcdf.open([par_pathin '/' exp_1 '/results/biogem_fields_3d.nc'],'nowrite');
+    ncid_1=netcdf.open([par_pathin '/' exp_1 '/results/fields_ocean_3d.nc'],'nowrite');
 end
 % read netCDf information
 [ndims,nvars,ngatts,unlimdimid] = netcdf.inq(ncid_1);
@@ -328,7 +327,7 @@ end
 % *********************************************************************** %
 %
 % load grid data
-varid  = netcdf.inqVarID(ncid_1,'grid_level');
+varid  = netcdf.inqVarID(ncid_1,'2Dgrid_level');
 grid_k1 = netcdf.getVar(ncid_1,varid);
 rawgrid = grid_k1;
 % flip array around diagonal to give (j,i) array orientation
@@ -551,7 +550,7 @@ if ~isempty(exp_2)
     if strcmp(exp_2(end-2:end),'.nc')
         ncid_2=netcdf.open(exp_2,'nowrite');
     else
-        ncid_2=netcdf.open([par_pathin '/' exp_2 '/results/biogem_fields_3d.nc'],'nowrite');
+        ncid_2=netcdf.open([par_pathin '/' exp_2 '/results/fields_ocean_3d.nc'],'nowrite');
     end
     % read netCDf information
     [~,nvars,~,~] = netcdf.inq(ncid_2); % [ndims,nvars,ngatts,unlimdimid]
@@ -796,7 +795,7 @@ else
 end
 data = data + data_offset;
 % filter gridded data
-% NOTE: adopt equivalent criteria for 'NaN' as per plot_biogem_fields_3d_i
+% NOTE: adopt equivalent criteria for 'NaN' as per plot_fields_ocean_3d_i
 %       (not NaN :: (data(k,j,i) > -0.999E19) && (data(k,j,i) < 0.999E19))
 % NOTE: plot_fields_biogem_2d filters the 2 datasets before differencing
 n = 0;
@@ -1446,7 +1445,7 @@ if (~isempty(dataid_2))
         if (plot_secondary=='y')
             % plot Taylor diagram
             taylordiag_vargout = plot_taylordiag(STATM(2,1:2),STATM(3,1:2),STATM(4,1:2));
-            print('-depsc2', [par_pathout '/' filename, '_TaylorDiagram.', str_date, '.eps']);
+            exportgraphics(gcf,[par_pathout '/' filename '.TaylorDiagram.' str_date '.pdf'],'BackgroundColor','none','ContentType','vector');
             %%%% plot Target diagram
             %%%targetdiag_vargout = plot_target(STATM(7,1:2),STATM(8,1:2),'r',1.0,[],[]);
             %%%print('-depsc2', [filename, '_TargetDiagram.', str_date, '.eps']);
@@ -2195,11 +2194,7 @@ if (plot_main == 'y')
     % *** PRINT PLOT **************************************************** %
     %
     set(gcf,'CurrentAxes',fh(1));
-    if (plot_format_old == 'y')
-        print('-dpsc2', '-bestfit', [par_pathout '/' filename '.' str_date '.ps']);
-    else
-        exportgraphics(gcf,[par_pathout '/' filename '.' str_date '.pdf'],'BackgroundColor','none','ContentType','vector');
-    end
+    exportgraphics(gcf,[par_pathout '/' filename '.' str_date '.pdf'],'BackgroundColor','none','ContentType','vector');
     %
     % *** SAVE DATA ***************************************************** %
     %
@@ -2271,22 +2266,24 @@ if (plot_secondary == 'y')
     %
     % *** PLOT FIGURE (histogram) *************************************** %
     %
-    % single histogram
-    loc_bins1 = [con_min:(con_max-con_min)/con_n:con_max];
-    str_name = [par_pathout '/' filename '.HIST1'];
-    plot_histc_2d(data_vector_1,loc_bins1,strrep(dataid_1,'_','-'),[],[],'',plot_histc_SETTINGS,str_name);
-    % double histogram
-    str_name = [par_pathout '/' filename '.HIST2'];
-    if (~isempty(dataid_2))
-        loc_min = min(data_vector_2);
-        loc_max = max(data_vector_2);
-        loc_bins2 = [loc_min:(loc_max-loc_min)/10:loc_max];
-        plot_histc_2d(data_vector_1,loc_bins1,strrep(dataid_1,'_','-'),data_vector_2,loc_bins2,[strrep(dataid_2,'_','-')],plot_histc_SETTINGS,[str_name 'D']);
-    else
-        loc_bins2 = fliplr(grid_zt_edges');
-        loc_bins2(find(loc_bins2 < plot_D_min)) = [];
-        loc_bins2(find(loc_bins2 > plot_D_max)) = [];
-        plot_histc_2d(data_vector_1,loc_bins1,strrep(dataid_1,'_','-'),data_vector_D,loc_bins2,'Depth (m)',plot_histc_SETTINGS,str_name);
+    if (plot_hist == 'y')
+        % single histogram
+        loc_bins1 = [con_min:(con_max-con_min)/con_n:con_max];
+        str_name = [par_pathout '/' filename '.HIST1'];
+        plot_histc_2d(data_vector_1,loc_bins1,strrep(dataid_1,'_','-'),[],[],'',plot_histc_SETTINGS,str_name);
+        % double histogram
+        str_name = [par_pathout '/' filename '.HIST2'];
+        if (~isempty(dataid_2))
+            loc_min = min(data_vector_2);
+            loc_max = max(data_vector_2);
+            loc_bins2 = [loc_min:(loc_max-loc_min)/10:loc_max];
+            plot_histc_2d(data_vector_1,loc_bins1,strrep(dataid_1,'_','-'),data_vector_2,loc_bins2,[strrep(dataid_2,'_','-')],plot_histc_SETTINGS,[str_name 'D']);
+        else
+            loc_bins2 = fliplr(grid_zt_edges');
+            loc_bins2(find(loc_bins2 < plot_D_min)) = [];
+            loc_bins2(find(loc_bins2 > plot_D_max)) = [];
+            plot_histc_2d(data_vector_1,loc_bins1,strrep(dataid_1,'_','-'),data_vector_D,loc_bins2,'Depth (m)',plot_histc_SETTINGS,str_name);
+        end
     end
     %
     % ******************************************************************* %
@@ -2325,12 +2322,12 @@ if ((data_save == 'y') && isempty(overlaydataid) && ~isempty(exp_2) && (plot_sec
     % NOTE: GENIE netCDF plotting compatable format
     netcdf.putAtt(ncid,NC_GLOBAL,'title','Gridded data');
     netcdf.putAtt(ncid,NC_GLOBAL,'long_title','Regridded on a regular lon-lat, irregular in depth, grid');
-    netcdf.putAtt(ncid,NC_GLOBAL,'comments','anomolg saving by plot_biogem_fields_3d_k.m');
+    netcdf.putAtt(ncid,NC_GLOBAL,'comments','anomolg saving by plot_fields_ocean_3d_k.m');
     netcdf.putAtt(ncid,NC_GLOBAL,'history','version as of 16/02/29');
     netcdf.putAtt(ncid,NC_GLOBAL,'Conventions','CF-1.6 / GENIE modified');
     netcdf.putAtt(ncid,NC_GLOBAL,'CreationDate',datestr(now,'yyyy/mm/dd HH:MM:SS'));
     netcdf.putAtt(ncid,NC_GLOBAL,'CreatedBy',[getenv('username'), '@', getenv('computername')]);
-    netcdf.putAtt(ncid,NC_GLOBAL,'MatlabSource','plot_biogem_fields_3d_k.m');
+    netcdf.putAtt(ncid,NC_GLOBAL,'MatlabSource','plot_fields_ocean_3d_k.m');
     % define dimensions
     dimid_time = netcdf.defDim(ncid,'time',1);
     dimid_zt = netcdf.defDim(ncid,'zt',kmax);
@@ -2406,8 +2403,8 @@ if ((data_save == 'y') && isempty(overlaydataid) && ~isempty(exp_2) && (plot_sec
     netcdf.putAtt(ncid,varid,'units','?');
     varid_data = varid;
     % define data variable -- grid mask
-    varid = netcdf.defVar(ncid,'grid_level','double',[dimid_lon, dimid_lat]);
-    netcdf.putAtt(ncid,varid,'name','grid_level');
+    varid = netcdf.defVar(ncid,'2Dgrid_level','double',[dimid_lon, dimid_lat]);
+    netcdf.putAtt(ncid,varid,'name','2Dgrid_level');
     netcdf.putAtt(ncid,varid,'long_name','grid level');
     netcdf.putAtt(ncid,varid,'missing_value',-par_data_null);
     netcdf.putAtt(ncid,varid,'fillValue',-par_data_null);
@@ -2517,6 +2514,11 @@ else
             output.model.mean = mean(data_vector_2);
             output.model.min  = min(data_vector_2);
             output.model.max  = max(data_vector_2);
+        else
+            output.model.n    = sum(~isnan(reshape(zm,[],1)));
+            output.model.mean = mean(reshape(zm,[],1),1,'omitnan');
+            output.model.min  = min(reshape(zm,[],1),1,'omitnan');
+            output.model.max  = max(reshape(zm,[],1),1,'omitnan');
         end
     end
     % add model-data/model stats
