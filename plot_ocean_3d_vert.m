@@ -678,7 +678,7 @@ if ~isempty(plot_opsi)
         % *** USE PRE-SAVED 2D DATA ********************************************* %
         %
         % open netCDF file
-        ncid_0=netcdf.open([par_pathin '/' exp_1 '/results/biogem_fields_2d.nc'],'nowrite');
+        ncid_0=netcdf.open([par_pathin '/' exp_1 '/results/fields_ocean_2d.nc'],'nowrite');
         % read netCDf information
         [ndims,nvars,ngatts,unlimdimid] = netcdf.inq(ncid_0);
         % load grid information
@@ -694,11 +694,11 @@ if ~isempty(plot_opsi)
         % set variable name
         switch plot_opsi
             case {'g'}
-                varid  = netcdf.inqVarID(ncid_0,'phys_opsi');
+                varid  = netcdf.inqVarID(ncid_0,'climate_opsi');
             case 'a'
-                varid  = netcdf.inqVarID(ncid_0,'phys_opsia');
+                varid  = netcdf.inqVarID(ncid_0,'climate_opsia');
             case 'p'
-                varid  = netcdf.inqVarID(ncid_0,'phys_opsip');
+                varid  = netcdf.inqVarID(ncid_0,'climate_opsip');
             otherwise
                 disp('Unknown opsi definition.')
         end
@@ -734,7 +734,7 @@ if ~isempty(plot_opsi)
             loc_cv(j) = sqrt(1 - loc_sv(j)*loc_sv(j));
         end
         % (2) load velocity data
-        varid  = netcdf.inqVarID(ncid_1,'phys_v');
+        varid  = netcdf.inqVarID(ncid_1,'climate_v');
         [varname,xtype,dimids,natts] = netcdf.inqVar(ncid_1,varid);
         rawdata = netcdf.getVar(ncid_1,varid);
         if length(dimids) == 4
@@ -754,9 +754,9 @@ if ~isempty(plot_opsi)
             data_v(:,:,:) = NaN;
         end
         % scale velocity
-        % NOTE: saved velocity field has been scaled by usc (0.05);
-        %       this factor has to be undone for the MOC calculation ...
-        data_v = data_v/0.05;
+        % % NOTE: saved velocity field has been scaled by usc (0.05);
+        % %       this factor has to be undone for the MOC calculation ...
+        % data_v = data_v/0.05;
         % create streamfunction arrays
         loc_ou = zeros(jmax,kmax);
         loc_opsi = zeros(jmax+1,kmax+1);
