@@ -1,5 +1,5 @@
-function [OUTPUT] = plot_ocean_2d(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PMASK,PCSCALE,PCMIN,PCMAX,PCN,PDATA,POPT,PNAME)
-% plot_fields_ocean_2d
+function [OUTPUT] = plot_ocean_2d(s_in)
+% plot_ocean_2d
 %
 %   *******************************************************************   %
 %   *** biogem 2-D (LON-LAT) DATA PLOTTING ****************************   %
@@ -78,6 +78,17 @@ function [OUTPUT] = plot_ocean_2d(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PMASK,PCSC
 %   25/10/31    changed aassumed biogem directory -> results
 %               updated netCDF filename
 %               *** VERSION 2.00 ******************************************
+%   26/09/23    updated for new cookie netCDF variable names
+%               set PSI data == missing_value = NaN
+%               [this should be done for all variables]
+%               REVISED PARAMETER PASSING -- NOW STRUCTURE
+%               (for now, the options file is left alone, 
+%               as are the original variable names)
+%               [move to new format needs to be completed]
+%               add option to save main plot as image (bitmap) 
+%               instead of (only) PDF format
+%               (to improve speed ... hopefully ...)
+%               *** VERSION 2.01 ******************************************
 %
 % *********************************************************************** %
 %%
@@ -89,20 +100,41 @@ function [OUTPUT] = plot_ocean_2d(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PMASK,PCSC
 % *** initialize ******************************************************** %
 % 
 % set version!
-par_ver = 2.00;
+par_ver = 2.01;
 % set function name
 str_function = mfilename;
 % close open windows
 close all;
-% load plotting options
-if isempty(POPT), POPT='plot_fields_SETTINGS'; end
-eval(POPT);
 % set date
 str_date = [datestr(date,11), datestr(date,5), datestr(date,7)];
 % determine whcih stupid version of MUTLAB we are using
 tmp_mutlab = version('-release');
 str_mutlab = tmp_mutlab(1:4);
 par_mutlab = str2num(str_mutlab);
+%
+% *** ingest original parameters as structure *************************** %
+% 
+% load plotting options
+if ~isfield(s_in,'popt'), s.popt='plot_fields_SETTINGS'; end; popt = s_in.popt;
+eval(popt); 
+if ~isfield(s_in,'exp_1'), s_in.exp_1 = ''; end; exp_1 = s_in.exp_1;
+if ~isfield(s_in,'exp_2'), s_in.exp_2 = ''; end; exp_2 = s_in.exp_2;
+if ~isfield(s_in,'timesliceid_1'), s_in.timesliceid_1 = 0.5; end; timesliceid_1 = s_in.timesliceid_1;
+if ~isfield(s_in,'timesliceid_2'), s_in.timesliceid_2 = -1; end; timesliceid_2 = s_in.timesliceid_2;
+if ~isfield(s_in,'dataid_1'), s_in.dataid_1 = ''; end; dataid_1 = s_in.dataid_1;
+if ~isfield(s_in,'dataid_2'), s_in.dataid_2 = ''; end; dataid_2 = s_in.dataid_2;
+if ~isfield(s_in,'kplotmax'), s_in.kplotmax = 0; end; kplotmax = s_in.kplotmax;
+if ~isfield(s_in,'data_scale'), s_in.data_scale = 1.0; end; data_scale = s_in.data_scale;
+if ~isfield(s_in,'con_min'), s_in.con_min = 0; end; con_min = s_in.con_min;
+if ~isfield(s_in,'con_max'), s_in.con_max = 0; end; con_max = s_in.con_max;
+if ~isfield(s_in,'con_n'), s_in.con_n = 10; end; con_n = s_in.con_n;
+if ~isfield(s_in,'maskid'), s_in.maskid = ''; end; maskid = s_in.maskid;
+if ~isfield(s_in,'overlaydataid'), s_in.overlaydataid = ''; end; overlaydataid = s_in.overlaydataid;
+if ~isfield(s_in,'altfilename'), s_in.altfilename = ''; end; altfilename = s_in.altfilename;
+%
+% *** structure backwards compatability ********************************* %
+%
+if ~isfield(s_in,'plotformat'), s.plotformat='png'; end;
 %
 % *** backwards compatability ******************************************* %
 % 
@@ -145,24 +177,6 @@ lon_max = lon_min+360;
 lon_offset = 0;
 % null data value
 par_data_null = 9.9E19;
-%
-% *** copy passed parameters ******************************************** %
-% 
-% set passed parameters
-exp_1 = PEXP1;
-exp_2 = PEXP2;
-timesliceid_1 = PT1;
-timesliceid_2 = PT2;
-dataid_1 = PVAR1;
-dataid_2 = PVAR2;
-kplotmax = PIK;
-data_scale = PCSCALE;
-con_min = PCMIN;
-con_max = PCMAX;
-con_n = PCN;
-maskid = PMASK;
-overlaydataid = PDATA;
-altfilename = PNAME;
 %
 % *** DEFINE COLORS ***************************************************** %
 %
@@ -617,9 +631,11 @@ end
 %
 if exist('plot_psi','var')
     if (plot_psi == 'y'),
-        varid  = netcdf.inqVarID(ncid_1,'phys_psi');
+        varid  = netcdf.inqVarID(ncid_1,'climate_psi');
         [varname,xtype,dimids,natts] = netcdf.inqVar(ncid_1,varid);
         rawdata = netcdf.getVar(ncid_1,varid);
+        loc_fillvalue = netcdf.getAtt(ncid_1,varid,'missing_value');
+        rawdata(rawdata == loc_fillvalue) = NaN;
         if length(dimids) == 3
             rawdata(1:imax,1:jmax+1)  = rawdata(1:imax,1:jmax+1,tid);
             data_psi(1:jmax+1,1:imax) = rawdata(1:imax,1:jmax+1)';
@@ -1721,7 +1737,14 @@ if (plot_main == 'y')
     % *** PRINT PLOT **************************************************** %
     %
     set(gcf,'CurrentAxes',fh(1));
-    exportgraphics(gcf,[par_pathout '/' filename '.' str_date '.pdf'],'BackgroundColor','none','ContentType','vector');
+    switch s_in.plotformat
+        case {'pdf'}
+            exportgraphics(gcf,[par_pathout '/' filename '.' str_date '.pdf'],'BackgroundColor','none','ContentType','vector');
+        case {'png','jpg','tif'}
+            exportgraphics(gcf,[par_pathout '/' filename  '.' str_date '.' s_in.plotformat],'ContentType','image');
+        otherwise
+            % NO SAVED PLOT!
+    end
     %
     % *********************************************************************** %
     %
