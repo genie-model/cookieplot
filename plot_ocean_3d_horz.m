@@ -535,12 +535,12 @@ if length(dimids) == 4
         data_1(kmax - n + 1,1:jmax,1:imax) = rawdata(1:imax,1:jmax,n)';
     end
 elseif length(dimids) == 3
-    rawdata(1:imax,1:jmax,1:kmax) = netcdfata(1:imax,1:jmax,1:kmax);
+    rawdata(1:imax,1:jmax,1:kmax) = netcdfdata(1:imax,1:jmax,1:kmax);
     for n = 1:kmax
         data_1(kmax - n + 1,1:jmax,1:imax) = rawdata(1:imax,1:jmax,n)';
     end
 elseif length(dimids) == 2
-    rawdata(1:imax,1:jmax) = netcdfata(1:imax,1:jmax);
+    rawdata(1:imax,1:jmax) = netcdfdata(1:imax,1:jmax);
     data_1(1:jmax,1:imax) = rawdata(1:imax,1:jmax)';
 else
     data_1(:,:,:) = NaN;
