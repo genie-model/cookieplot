@@ -29,16 +29,18 @@ end
 % *** initialize ******************************************************** %
 %
 % set version!
-par_ver = 2.00;
+par_ver = 2.01;
 % set function name
 str_function = mfilename;
 % set date
 str_date = [datestr(date,11), datestr(date,5), datestr(date,7)];
-% set paths
-str_current_path = pwd; % find current path
-s_tmp = what('cookieplot'); % find path to cookieplot directory
-str_cookieplot_path = s_tmp.path;
-% add path to default settings
+% set current path
+str_current_path = pwd;
+% path to cookieplot directory from the location of this function
+% NOTE: assuming that this function still resides in that directory ...
+%       and that cookieplot is in the MATLAB search path
+str_cookieplot_path = fileparts(which(str_function));
+% add SETTINGS path
 par_pathin = [str_cookieplot_path '/' 'SETTINGS'];
 if ~(exist(par_pathin,'dir') == 7)
     disp([' * ERROR: Cannot find SETTINGS directory of cookieplot: ' par_pathin]); disp([' ']); return;

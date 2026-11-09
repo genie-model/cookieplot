@@ -10,7 +10,7 @@ end
 %   *******************************************************************   %
 %
 %   plot_ocean_2d(s_in,str_in)
-%   plots the BIOGEM 2-D netCDF data file 'fields_ocean_2d.nc'
+%   plots the BIOGEM 2D netCDF data file 'fields_ocean_2d.nc'
 %
 %   *******************************************************************   %
 
@@ -49,11 +49,13 @@ par_ver = 2.01;
 str_function = mfilename;
 % set date
 str_date = [datestr(date,11), datestr(date,5), datestr(date,7)];
-% set paths
-str_current_path = pwd; % find current path
-s_tmp = what('cookieplot'); % find path to cookieplot directory
-str_cookieplot_path = s_tmp.path;
-% add path to default settings
+% set current path
+str_current_path = pwd;
+% path to cookieplot directory from the location of this function
+% NOTE: assuming that this function still resides in that directory ...
+%       and that cookieplot is in the MATLAB search path
+str_cookieplot_path = fileparts(which(str_function));
+% add SETTINGS path
 par_pathin = [str_cookieplot_path '/' 'SETTINGS'];
 if ~(exist(par_pathin,'dir') == 7)
     disp([' * ERROR: Cannot find SETTINGS directory of cookieplot: ' par_pathin]); disp([' ']); return;
@@ -134,13 +136,13 @@ if isfield(s_in,'contours')
     if ~isfield(s_in.contours,'show'),    s_in.contours.show = false; end
     if ~isfield(s_in.contours,'major'),   s_in.contours.major = 1; end
     if ~isfield(s_in.contours,'minor'),   s_in.contours.minor = 1; end
-    if ~isfield(s_in.contours,'label'),   s_in.contours.label = true; end
+    if ~isfield(s_in.contours,'showlabels'), s_in.contours.showlabels = true; end
     if ~isfield(s_in.contours,'dashneg'), s_in.contours.dashneg = false; end
 else
     s_in.contours.show = false;
     s_in.contours.major = 1;
     s_in.contours.minor = 1;
-    s_in.contours.label = true;
+    s_in.contours.showlabels = true;
     s_in.contours.dashneg = false;
 end
 % overlays
@@ -1519,10 +1521,10 @@ if (s_in.plot.main)
             % major
             v = [s_in.data.min:s_in.contours.major:0.0];
             [C,h] = contour(xm_ex,sin(pi*ym_ex/180.0),zm_ex,v,loc_linestyle);
-            set(h,'LineWidth',0.50); if (s_in.contours.label), clabel(C,h); end
+            set(h,'LineWidth',0.50); if (s_in.contours.showlabels), clabel(C,h); end
             v = [0.0:s_in.contours.major:s_in.data.max];
             [C,h] = contour(xm_ex,sin(pi*ym_ex/180.0),zm_ex,v,'k-');
-            set(h,'LineWidth',0.50); if (s_in.contours.label), clabel(C,h); end
+            set(h,'LineWidth',0.50); if (s_in.contours.showlabels), clabel(C,h); end
         elseif (s_in.data.max <= 0.0)
             % all -ve and contours
             % minor
@@ -1532,7 +1534,7 @@ if (s_in.plot.main)
             % major
             v = [s_in.data.min:s_in.contours.major:s_in.data.max];
             [C,h] = contour(xm_ex,sin(pi*ym_ex/180.0),zm_ex,v,loc_linestyle);
-            set(h,'LineWidth',0.50); if (s_in.contours.label), clabel(C,h); end
+            set(h,'LineWidth',0.50); if (s_in.contours.showlabels), clabel(C,h); end
         else
             % all +ve and contours
             % minor
@@ -1542,79 +1544,79 @@ if (s_in.plot.main)
             % major
             v = [s_in.data.min:s_in.contours.major:s_in.data.max];
             [C,h] = contour(xm_ex,sin(pi*ym_ex/180.0),zm_ex,v,'k-');
-            set(h,'LineWidth',0.50); if (s_in.contours.label), clabel(C,h); end
+            set(h,'LineWidth',0.50); if (s_in.contours.showlabels), clabel(C,h); end
         end
         % additional highlight contours
         loc_lim = 2.0*(abs(s_in.data.min) + abs(s_in.data.max));
         if (contour_hlt == 'y'),
             v = [-loc_lim+contour_hltval:loc_lim:loc_lim+contour_hltval];
             [C,h] = contour(xm_ex,sin(pi*ym_ex/180.0),zm_ex,v,'w-');
-            set(h,'LineWidth',1.0); if c(s_in.contours.label), clabel(C,h); end
+            set(h,'LineWidth',1.0); if c(s_in.contours.showlabels), clabel(C,h); end
         end
         if (contour_hlt2 == 'y'),
             v = [-loc_lim+contour_hltval2:loc_lim:loc_lim+contour_hltval2];
             [C,h] = contour(xm_ex,sin(pi*ym_ex/180.0),zm_ex,v,'w--');
-            set(h,'LineWidth',1.0); if (s_in.contours.label), clabel(C,h); end
+            set(h,'LineWidth',1.0); if (s_in.contours.showlabels), clabel(C,h); end
         end
     end
     %
     % *** OVERLAY PSI FIELD ********************************************* %
     %
     % psi.show field if requested
-        if (s_in.psi.show)
-            if (s_in.overlay.only)
-                %
-                s_in.data.min = s_in.psi.min;
-                s_in.data.max = s_in.psi.max;
-                s_in.data.intervals = (s_in.psi.max - s_in.psi.min)/s_in.psi.minor;
-                % re-define colormap
-                cmap = make_cmap('anom',s_in.data.intervals+2);
-                if (s_in.plot.invertcolors), cmap = flipdim(cmap,1); end,
-                colormap(cmap);
-                caxis([s_in.data.min-(s_in.data.max-s_in.data.min)/s_in.data.intervals s_in.data.max]);
-                % colors!
-                v = [s_in.psi.min:s_in.psi.minor:s_in.psi.max];
-                [C,h] = contourf(xpsi_ex,sin(pi*ypsi_ex/180.0),zpsi_ex,v,'k:');
-                set(h,'LineColor','none')
-                % contours
-                v = [s_in.psi.min:s_in.psi.minor:0.0];
-                [C,h] = contour(xpsi_ex,sin(pi*ypsi_ex/180.0),zpsi_ex,v,'k-.');
-                set(h,'LineWidth',0.25);
-                v = [s_in.psi.min:s_in.psi.major:0.0];
-                [C,h] = contour(xpsi_ex,sin(pi*ypsi_ex/180.0),zpsi_ex,v,'k-.');
-                set(h,'LineWidth',0.50);
-                if (s_in.contours.label), clabel(C,h); end
-                v = [s_in.psi.max:-s_in.psi.minor:0.0];
-                [C,h] = contour(xpsi_ex,sin(pi*ypsi_ex/180.0),zpsi_ex,v,'k-');
-                set(h,'LineWidth',0.25);
-                v = [s_in.psi.max:-s_in.psi.major:0.0];
-                [C,h] = contour(xpsi_ex,sin(pi*ypsi_ex/180.0),zpsi_ex,v,'k-');
-                set(h,'LineWidth',0.50);
-                if (s_in.contours.label), clabel(C,h); end
-            else
-                %
-                v = [s_in.psi.min:s_in.psi.minor:0.0];
-                [C,h] = contour(xpsi_ex,sin(pi*ypsi_ex/180.0),zpsi_ex,v,'k-.');
-                set(h,'LineWidth',0.25);
-                v = [s_in.psi.min:s_in.psi.major:0.0];
-                [C,h] = contour(xpsi_ex,sin(pi*ypsi_ex/180.0),zpsi_ex,v,'k-.');
-                set(h,'LineWidth',0.50);
-                if (s_in.contours.label), clabel(C,h); end
-                v = [s_in.psi.max:-s_in.psi.minor:0.0];
-                [C,h] = contour(xpsi_ex,sin(pi*ypsi_ex/180.0),zpsi_ex,v,'k-');
-                set(h,'LineWidth',0.25);
-                v = [s_in.psi.max:-s_in.psi.major:0.0];
-                [C,h] = contour(xpsi_ex,sin(pi*ypsi_ex/180.0),zpsi_ex,v,'k-');
-                set(h,'LineWidth',0.50);
-                if (s_in.contours.label), clabel(C,h); end
-            end
-            % add zero contour
-            if (contour_zero == 'y')
-                v = [-1.0e19:1.0e19:1.0E19];
-                [C,h] = contour(xpsi_ex,sin(pi*ypsi_ex/180.0),zpsi_ex,v,'k-');
-                set(h,'LineWidth',1.0);
-                if (s_in.contours.label), clabel(C,h); end
-            end
+    if (s_in.psi.show)
+        if (s_in.overlay.only)
+            %
+            s_in.data.min = s_in.psi.min;
+            s_in.data.max = s_in.psi.max;
+            s_in.data.intervals = (s_in.psi.max - s_in.psi.min)/s_in.psi.minor;
+            % re-define colormap
+            cmap = make_cmap('anom',s_in.data.intervals+2);
+            if (s_in.plot.invertcolors), cmap = flipdim(cmap,1); end
+            colormap(cmap);
+            caxis([s_in.data.min-(s_in.data.max-s_in.data.min)/s_in.data.intervals s_in.data.max]);
+            % contour
+            v = [s_in.psi.min:s_in.psi.minor:s_in.psi.max];
+            [C,h] = contourf(xpsi_ex,sin(pi*ypsi_ex/180.0),zpsi_ex,v,'k:');
+            set(h,'LineColor','none')
+            % contours
+            v = [s_in.psi.min:s_in.psi.minor:0.0];
+            [C,h] = contour(xpsi_ex,sin(pi*ypsi_ex/180.0),zpsi_ex,v,'k-.');
+            set(h,'LineWidth',0.25);
+            v = [s_in.psi.min:s_in.psi.major:0.0];
+            [C,h] = contour(xpsi_ex,sin(pi*ypsi_ex/180.0),zpsi_ex,v,'k-.');
+            set(h,'LineWidth',0.50);
+            if (s_in.contours.showlabels), clabel(C,h); end
+            v = [s_in.psi.max:-s_in.psi.minor:0.0];
+            [C,h] = contour(xpsi_ex,sin(pi*ypsi_ex/180.0),zpsi_ex,v,'k-');
+            set(h,'LineWidth',0.25);
+            v = [s_in.psi.max:-s_in.psi.major:0.0];
+            [C,h] = contour(xpsi_ex,sin(pi*ypsi_ex/180.0),zpsi_ex,v,'k-');
+            set(h,'LineWidth',0.50);
+            if (s_in.contours.showlabels), clabel(C,h); end
+        else
+            %
+            v = [s_in.psi.min:s_in.psi.minor:0.0];
+            [C,h] = contour(xpsi_ex,sin(pi*ypsi_ex/180.0),zpsi_ex,v,'k-.');
+            set(h,'LineWidth',0.25);
+            v = [s_in.psi.min:s_in.psi.major:0.0];
+            [C,h] = contour(xpsi_ex,sin(pi*ypsi_ex/180.0),zpsi_ex,v,'k-.');
+            set(h,'LineWidth',0.50);
+            if (s_in.contours.showlabels), clabel(C,h); end
+            v = [s_in.psi.max:-s_in.psi.minor:0.0];
+            [C,h] = contour(xpsi_ex,sin(pi*ypsi_ex/180.0),zpsi_ex,v,'k-');
+            set(h,'LineWidth',0.25);
+            v = [s_in.psi.max:-s_in.psi.major:0.0];
+            [C,h] = contour(xpsi_ex,sin(pi*ypsi_ex/180.0),zpsi_ex,v,'k-');
+            set(h,'LineWidth',0.50);
+            if (s_in.contours.showlabels), clabel(C,h); end
+        end
+        % add zero contour
+        if (contour_zero == 'y')
+            v = [-1.0e19:1.0e19:1.0E19];
+            [C,h] = contour(xpsi_ex,sin(pi*ypsi_ex/180.0),zpsi_ex,v,'k-');
+            set(h,'LineWidth',1.0);
+            if (s_in.contours.showlabels), clabel(C,h); end
+        end
         % draw land
         for i = 1:imax
             for j = 1:jmax

@@ -1,73 +1,16 @@
-function [OUTPUT] = plot_ocean_3d_horz(s_in)
+function [OUTPUT] = plot_ocean_3d_horz(s_in,str_in)
+arguments
+    s_in
+    str_in = '';
+end
 % plot_ocean_3d_horz
 %
 %   *******************************************************************   %
-%   *** biogem k-SECTION (LON-LAT) DIFFERENCE PLOTTING ****************   %
+%   *** biogem 3-D (LON-LAT) DATA PLOTTING ****************************   %
 %   *******************************************************************   %
 %
-%   plot_ocean_3d_horz(PEXP1,PEXP2,PVAR1,PVAR2,PT1,PT2,PIK,PMASK,PCSCALE,PCMIN,PCMAX,PCN,PDATA,POPT,PNAME)
-%   plots a k-section through the BIOGEM 3-D netCDF data file (with
-%   differencing/anomoly and water column integral options)
-%   'fields_ocean_3d.nc' and takes 15 arguments:
-%
-%   PEXP1 [STRING] (e.g. 'preindustrial_spinup')
-%   --> the (first) experiment name
-%   PEXP2 [STRING] [OPTIONAL] (e.g. 'enhanced_export')
-%   --> the experiment name of 2nd, optional, netCDF file
-%   --> leave EXP2 blank, i.e., '', for no second netCDF file
-%   PVAR1 [STRING] (e.g. 'ocn_PO4')
-%   --> id the name of 1st variable to be plotted
-%   --> all valid valiable names will be listed if an invalid name is given
-%   PVAR2 [STRING] [OPTIONAL] (e.g. 'ocn_NO3')
-%   --> id the name of 2nd, optional, variable
-%   PT1 [REAL] (e.g. 1999.5)
-%   --> the (first) time-slice year
-%   --> all valid years will be listed if an invalid year is given
-%   PT2 [REAL] [OPTIONAL] (e.g. 0.5)
-%   --> the year of the 2nd, optional, time-slice
-%   --> set PT2 to -1 for no second time-slice
-%   PIK [INTEGER] (e.g. 16)
-%   --> the level in the ocean model to be plotted (the 'k' slice)
-%   --> a zero will result in a water column integral being plotted
-%       but with model-data carried out on the grid as a whole
-%   --> a -1 will result in the benthic surface being plotted
-%   PMASK [STRING] (e.g. 'mask_worjh2_Indian.dat')
-%   --> the filename containing the mask (in the working directory)
-%   PCSCALE [REAL] (e.g. 1.0)
-%   --> the scale factor for the plot
-%       e.g., to plot in units of micro molar (umol kg-1), enter: 1e-6
-%             to plot negative values, enter: -1
-%   --> the plot is auto-scaled if a value of zero (0.0) is entered
-%   PCMIN [REAL] (e.g. 0.0)
-%   --> the minimum scale value
-%   PCMAX [REAL] (e.g. 100.0)
-%   --> the maxumum scale value
-%   PCN [INTEGER] (e.g. 20)
-%   --> the number of (contor) intervals between minimum and maximum
-%       scale values
-%   PDATA [STRING] (e.g. 'obs_d13C.dat')
-%   --> the filename containing any overlay data set,
-%       which must be formatted as (space) seperated columns of:
-%       lon, lat, depth, value, label
-%       or, of the option (below) data_ij = 'y', then as:
-%       i, j, k, value, label
-%   --> the full filename must be give, including any extensions
-%   --> leave PDATA blank, i.e., '', for no overlay data
-%   POPT [STRING] (e.g., 'plotting_config_2')
-%   --> the string for an alternative plotting parameter set
-%   --> if an empty (i.e., '') value is passed to this parameter
-%       then the default parameter set is used
-%   PNAME [STRING] (e.g., 'my_plot')
-%   --> the string for an alternative filename
-%   --> if an empty (i.e., '') value is passed to this parameter
-%       then a filename is automatically generated
-%
-%   Example
-%           plot_biogem_3d_k('experiment_1','','ocn_PO4','',1994.5,-1,16,'',1e-6,0,2,20,'','','')
-%           will plot the time-slice cenetered on a time of 1994.5,
-%           of PO4 concentrations at the ocean surface (k = 16),
-%           between 0 and 2 umol kg-1 in 20 contour intervals
-%           of 'experiment_1'
+%   plot_ocean_3d_horz(s_in,str_in)
+%   plots the BIOGEM 3D netCDF data file 'fields_ocean_3d.nc'
 %
 %   *******************************************************************   %
 
@@ -104,11 +47,13 @@ par_ver = 2.01;
 str_function = mfilename;
 % set date
 str_date = [datestr(date,11), datestr(date,5), datestr(date,7)];
-% set paths
-str_current_path = pwd; % find current path
-s_tmp = what('cookieplot'); % find path to cookieplot directory
-str_cookieplot_path = s_tmp.path;
-% add path to default settings
+% set current path
+str_current_path = pwd;
+% path to cookieplot directory from the location of this function
+% NOTE: assuming that this function still resides in that directory ...
+%       and that cookieplot is in the MATLAB search path
+str_cookieplot_path = fileparts(which(str_function));
+% add SETTINGS path
 par_pathin = [str_cookieplot_path '/' 'SETTINGS'];
 if ~(exist(par_pathin,'dir') == 7)
     disp([' * ERROR: Cannot find SETTINGS directory of cookieplot: ' par_pathin]); disp([' ']); return;
@@ -135,7 +80,7 @@ if ~isfield(s_in,'timeslice1'), s_in.timeslice1 = -1; end;  timesliceid_1 = s_in
 if ~isfield(s_in,'timeslice2'), s_in.timeslice2 = -1; end;  timesliceid_2 = s_in.timeslice2;
 if ~isfield(s_in,'fieldstr1'), s_in.fieldstr1 = ''; end;  dataid_1 = s_in.fieldstr1;
 if ~isfield(s_in,'fieldstr2'), s_in.fieldstr2 = ''; end;  dataid_2 = s_in.fieldstr2;
-if ~isfield(s_in,'slice'), s_in.slice = 99;  end;  kplot = s_in.slice;
+if ~isfield(s_in,'slice'), s_in.slice = 99;  end
 if ~isfield(s_in,'maskstr'), s_in.maskstr = ''; end; maskid = s_in.maskstr;
 if ~isfield(s_in,'datastr'), s_in.datastr = ''; end;  overlaydataid = s_in.datastr;
 if ~isfield(s_in,'savestr'), s_in.savestr = ''; end; altfilename = s_in.savestr;
@@ -144,15 +89,15 @@ if ~isfield(s_in,'savestr'), s_in.savestr = ''; end; altfilename = s_in.savestr;
 %
 % main plots
 if isfield(s_in,'plot')
-    if ~isfield(s_in.plot,'main'),         s_in.plot.main = true; end
-    if ~isfield(s_in.plot,'secondary'),    s_in.plot.secondary = false; end
+    if ~isfield(s_in.plot,'showmain'),     s_in.plot.showmain = true; end
+    if ~isfield(s_in.plot,'showextra'),    s_in.plot.showextra = false; end
     if ~isfield(s_in.plot,'format'),       s_in.plot.format = 'png'; end
     if ~isfield(s_in.plot,'colors'),       s_in.plot.colors = 'plasma'; end
     if ~isfield(s_in.plot,'invertcolors'), s_in.plot.invertcolors = false; end
     if ~isfield(s_in.plot,'title'),        s_in.plot.title = ''; end
 else
-    s_in.plot.main = true;
-    s_in.plot.secondary = false;
+    s_in.plot.showmain = true;
+    s_in.plot.showextra = false;
     s_in.plot.format = 'png';
     s_in.plot.colors = 'plasma';
     s_in.plot.invertcolors = false;
@@ -189,13 +134,13 @@ if isfield(s_in,'contours')
     if ~isfield(s_in.contours,'show'),    s_in.contours.show = false; end
     if ~isfield(s_in.contours,'major'),   s_in.contours.major = 1; end
     if ~isfield(s_in.contours,'minor'),   s_in.contours.minor = 1; end
-    if ~isfield(s_in.contours,'label'),   s_in.contours.label = true; end
+    if ~isfield(s_in.contours,'showlabels'),   s_in.contours.showlabels = true; end
     if ~isfield(s_in.contours,'dashneg'), s_in.contours.dashneg = false; end
 else
     s_in.contours.show = false;
     s_in.contours.major = 1;
     s_in.contours.minor = 1;
-    s_in.contours.label = true;
+    s_in.contours.showlabels = true;
     s_in.contours.dashneg = false;
 end
 % overlays
@@ -239,9 +184,6 @@ if (s_in.uv.show && isempty(s_in.fieldstr1))
     dataid_1 = s_in.fieldstr1;
     s_in.overlay.only=true;
 end
-
-
-
 %
 % *** backwards compatability ******************************************* %
 % 
@@ -317,11 +259,11 @@ if ((plot_lat_min == plot_lat_max) && (plot_lon_min == plot_lon_max))
     plot_xy_scaling = 1.0;
 else
     plot_global = false;
-    if (plot_lat_min == plot_lat_max),
+    if (plot_lat_min == plot_lat_max)
         plot_lat_min = lat_min;
         plot_lat_max = lat_max;
     end
-    if (plot_lon_min == plot_lon_max),
+    if (plot_lon_min == plot_lon_max)
         plot_lon_min = lon_min;
         plot_lon_max = lon_max;
     end
@@ -1560,7 +1502,7 @@ if (~isempty(dataid_2))
         % 	    STATM(4,:) => Correlation
         %       STATM(5,:) => N
         STATM = calc_allstats(data_vector_1,data_vector_2);
-        if (s_in.plot.secondary)
+        if (s_in.plot.showextra)
             % plot Taylor diagram
             taylordiag_vargout = plot_taylordiag(STATM(2,1:2),STATM(3,1:2),STATM(4,1:2));
             exportgraphics(gcf,[par_pathout '/' filename '.TaylorDiagram.' str_date '.pdf'],'BackgroundColor','none','ContentType','vector');
@@ -1672,7 +1614,7 @@ if (~isempty(overlaydataid) && (~s_in.overlay.only || (data_anomoly == 'y')))
     if ( (data_stats == 'y') && ~s_in.overlay.only )
         % calculate stats
         STATM = calc_allstats(data_vector_1,data_vector_2);
-        if (s_in.plot.secondary)
+        if (s_in.plot.showextra)
             taylordiag_vargout = plot_taylordiag(STATM(2,1:2),STATM(3,1:2),STATM(4,1:2));
             print('-depsc2', [par_pathout '/' filename, '_TaylorDiagram.', str_date, '.eps']);
             %%%% plot Target diagram
@@ -1952,7 +1894,7 @@ end
 % *** PLOT MAIN FIGURE ************************************************** %
 % *********************************************************************** %
 %
-if (s_in.plot.main)
+if (s_in.plot.showmain)
     %
     % *** CONFIGURE AND CREATE PLOTTING WINDOW ****************************** %
     %
@@ -2086,7 +2028,7 @@ if (s_in.plot.main)
     %
     % *** OVERLAY CONTOURS ************************************************** %
     %
-    if ((s_in.contours.show) && ~s_in.overlay.only)
+    if ( s_in.contours.showlabels && ~s_in.overlay.only)
         % create local y-axis (lat) values depending on equal area or not
         if (~s_in.grid.equallat)
             loc_ym_ex = sin(pi*ym_ex/180.0);
@@ -2100,7 +2042,7 @@ if (s_in.plot.main)
         % major
         v = [s_in.data.min:s_in.contours.major:s_in.data.max];
         [C,h] = contour(xm_ex,loc_ym_ex,zm_ex,v,'k-');
-        set(h,'LineWidth',0.5); if ( s_in.contours.label && ~s_in.data.log10 ), clabel(C,h); end
+        set(h,'LineWidth',0.5); if ( s_in.contours.showlabels && ~s_in.data.log10 ), clabel(C,h); end
         % additional highlight contours
         loc_lim = 2.0*(abs(s_in.data.min) + abs(s_in.data.max));
         if (contour_hlt == 'y')
@@ -2316,7 +2258,7 @@ end
 % *** SECONDARY FIGURES ************************************************* %
 % *********************************************************************** %
 %
-if (s_in.plot.secondary)
+if (s_in.plot.showextra)
     %
     % *** PLOT FIGURE (cross-plot) ************************************** %
     %
@@ -2402,7 +2344,7 @@ end
 %
 % *** create netCDF file ************************************************ %
 %
-if ( s_in.data.save && isempty(overlaydataid) && ~isempty(exp_2) && s_in.plot.secondary)
+if ( s_in.data.save && isempty(overlaydataid) && ~isempty(exp_2) && s_in.plot.showextra)
     % recreate anomoly
     rawdata_1(find(rawdata_1 > 1.0E30)) = NaN;
     rawdata_2(find(rawdata_2 > 1.0E30)) = NaN;
