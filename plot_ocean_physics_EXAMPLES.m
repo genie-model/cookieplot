@@ -1,4 +1,3 @@
-
 % *********************************************************************** %
 % *** INITIALIZE ******************************************************** %
 % *********************************************************************** %
@@ -7,7 +6,10 @@
 % 
 clear;
 close all;
-% add paths
+% add paths -- edit and un-comment (remove the '%%%')
+% NOTE: as an alternnative to adding a path to the cookieplot folder,
+%       simply run THIS script from the SAME directory as 
+%       all the cookieplot functions
 addpath('y:\___git\cookieplot');
 %
 % *********************************************************************** %
@@ -37,13 +39,13 @@ s_cmn.plotformat='png';
 s=s_cmn; s.exp_1='cookie.C.p_worjh2.r.SPIN'; s.altfilename='_TEST.p_worjh2.r';
 plot_timeseries(s);
 % (2) adding an optional SSS time-series
-s.exp_1='cookie.C.p_worjh2.r.SPIN'; s.altfilename='_TEST.p_worjh2.r.plusSSS';
+s=s_cmn; s.exp_1='cookie.C.p_worjh2.r.SPIN'; s.altfilename='_TEST.p_worjh2.r.plusSSS';
 % dataid_1  ==  optioal first time-series name -- omitting
 %               'timeseries_' and '.txt'
 % datacol_1 ==  which data column (remember that column 1 is always time)
 % axis1min  ==  minimum y-axis value (of timeseries data #1)
 % axis1max  ==  maximum y-axis value (of timeseries data #1)
-s=s_cmn; s.dataid_1='climate_SSS'; s.datacol_1=2; s.axis1min=34.0; s.axis1max=36.0;
+s.dataid_1='climate_SSS'; s.datacol_1=2; s.axis1min=34.0; s.axis1max=36.0;
 plot_timeseries(s);
 %
 % *** Cao et al. ******************************************************** %
@@ -123,7 +125,7 @@ plot_ocean_2d(s);
 s=s_cmn; s.fieldstr1='climate_SST'; s.data.min=0.0; s.data.max=25.0; s.data.intervals=25;
 % turn on overlying contours with: contours.show=true
 % and then specify the contour intervals (contours.major, contours.minor)
-s.contours.show=true; s.contours.major=5.0; s.contours.minor=1.0;
+s.contours.showlabels=true; s.contours.major=5.0; s.contours.minor=1.0;
 plot_ocean_2d(s);
 %
 % *** 3D physics -- horizontal ****************************************** %
@@ -137,11 +139,11 @@ plot_ocean_3d_horz(s);
 % (7) ocean surface temperature + CONTOURS
 s=s_cmn; s.fieldstr1='climate_temp'; s.slice=16; s.data.min=0.0; s.data.max=25.0; s.data.intervals=25;
 % adding overlying contours as per 2D example
-s.contours.show=true; s.contours.major=5.0; s.contours.minor=1.0;
+s.contours.showlabels=true; s.contours.major=5.0; s.contours.minor=1.0;
 plot_ocean_3d_horz(s);
 % (8) ocean surface salinity + CONTOURS
 s=s_cmn; s.fieldstr1='climate_sal'; s.slice=16; s.data.min=32.0; s.data.max=36.0; s.data.intervals=16;
-s.contours.show=true; s.contours.major=0.5; s.contours.minor=0.125;
+s.contours.showlabels=true; s.contours.major=0.5; s.contours.minor=0.125;
 plot_ocean_3d_horz(s);
 % (9) ocean sea-floor temperature
 % you can plot more than just horizontal slices -- setting s.slice=-1
@@ -165,6 +167,29 @@ plot_ocean_3d_horz(s);
 %
 % *** 3D physics -- vertical ******************************************** %
 %
+% (12) latitude-vertical salinty section through the Mediterranean
+s=s_cmn; s.fieldstr1='climate_sal'; s.slice=27; s.data.min=32.0; s.data.max=36.0; s.data.intervals=16;
+plot_ocean_3d_vert(s);
+% (12) latitude-vertical salinty section ...  + CONTOURS
+s=s_cmn; s.fieldstr1='climate_sal'; s.slice=27; s.data.min=32.0; s.data.max=36.0; s.data.intervals=16;
+s.contours.showlabels=true; s.contours.major=0.5; s.contours.minor=0.125;
+plot_ocean_3d_vert(s);
+% (13) OPSI (global meridional overturning circulation) -- from netCDF
+s=s_cmn; s.opsi.show=true; s.opsi.min=-30.0; s.opsi.max=30.0; s.opsi.major=10; s.opsi.minor=2;
+plot_ocean_3d_vert(s);
+% (14) AMOC -- from netCDF (when saved)
+% NOTE: s_in.opsi.basin specifies the basin (saved in netCDF):
+%       'g' (default) == global, 'a' == Atlantic, 'p' == Pacific
+s=s_cmn; s.opsi.basin='a'; s.opsi.show=true; s.opsi.min=-15.0; s.opsi.max=15.0; s.opsi.major=5; s.opsi.minor=1;
+plot_ocean_3d_vert(s);
+% (15) zonal mean Atlantic temeprature + CONTOURS
+s=s_cmn; s.fieldstr1='climate_temp'; s.maskname='mask_worjh2_Atlantic.dat'; s.data.min=-2.0; s.data.max=18.0; s.data.intervals=20;
+s.contours.showlabels=true; s.contours.major=2.0; s.contours.minor=1.0; s.plot.colors='inferno';
+plot_ocean_3d_vert(s);
+% (15) zonal mean Pacific temeprature + CONTOURS
+s=s_cmn; s.fieldstr1='climate_temp'; s.maskname='mask_worjh2_Pacific.dat'; s.data.min=-2.0; s.data.max=18.0; s.data.intervals=20;
+s.contours.showlabels=true; s.contours.major=2.0; s.contours.minor=1.0; s.plot.colors='inferno';
+plot_ocean_3d_vert(s);
 % <<< WORK IN PROGRESS >>>
 % % OPSI (global zonal mean / meridional overturning circulation)
 % plot_fields_biogem_3d_i(DUM_EXP,'','ocn_temp','',DUM_T,-1,0,'',1.0,0.0,30.0,30,'','plot_fields_SETTINGS_OPSI',[DUM_NAME '.PHYS_OPSI']);
